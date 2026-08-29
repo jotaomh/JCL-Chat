@@ -1,0 +1,28 @@
+# Cargo.toml — Configuração do projeto Rust (mass-messaging)
+#
+# Este serviço fará o broadcast de mensagens em massa de alta performance.
+# Nesta fase é um "hello world" que sobe um servidor HTTP.
+#
+# Dependências:
+#   - axum: framework web (leve e performático)
+#   - tokio: runtime assíncrono
+#   - serde: serialização/deserialização JSON
+#
+# Documentação: https://crates.io/crates/axum
+[package]
+name = "mass-messaging"
+version = "0.1.0"
+edition = "2021"
+description = "Serviço Rust de broadcast de mensagens em massa do JCL-Chat"
+
+[dependencies]
+# Framework web
+axum = "0.8.1"
+# Runtime assíncrono
+tokio = { version = "1.41.0", features = ["full"] }
+# Serialização JSON
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+# Logs estruturados
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }

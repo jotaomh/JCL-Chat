@@ -141,3 +141,24 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+# ============================================================
+#  JCL-Chat — Segredos e segurança
+#  Arquivos sensíveis (env, secrets) NUNCA devem ser commitados
+# ============================================================
+
+# Variáveis de ambiente locais
+.env.local
+.env.*.local
+
+# Certificados / chaves privadas
+*.pem
+*.key
+*.crt
+
+# Editor / SO
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db

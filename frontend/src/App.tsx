@@ -1,0 +1,48 @@
+// App.tsx — Componente raiz do aplicativo JCL-Chat
+// Responsável por renderizar a estrutura principal (router, layout, temas)
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { useAuth } from './hooks/useAuth';
+import { LoginPage } from './pages/LoginPage';
+import { ChannelsPage } from './pages/ChannelsPage';
+import { CallPage } from './pages/CallPage';
+
+// Componente App: é o componente principal que envolve toda a aplicação.
+// Usamos BrowserRouter para habilitar o roteamento no lado do cliente.
+//
+// Conceitos importantes:
+//   - "Routes"/"Route": define quais componentes renderizar por URL
+//   - "Navigate": redireciona para outra rota
+//   - "useAuth": hook para saber se o usuário está logado
+function App() {
+  const { isAuthenticated } = useAuth();
+
+  return (
+    <BrowserRouter>
+      <div className="app">
+        <Routes>
+          {/* Se autenticado, vai para os canais; senão, para o login */}
+          <Route
+            path="/"
+            element={
+              isAuthenticated ? <Navigate to="/channels" replace /> : <Navigate to="/login" replace />
+            }
+          />
+          <Route path="/login" element={<LoginPage />} />
+          {/* Rota protegida: apenas mostra canais se estiver autenticado */}
+          <Route
+            path="/channels"
+            element={isAuthenticated ? <ChannelsPage /> : <Navigate to="/login" replace />}
+          />
+          <Route
+            path="/call"
+            element={isAuthenticated ? <CallPage /> : <Navigate to="/login" replace />}
+          />
+          {/* Fallback para URLs desconhecidas */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </div>
+    </BrowserRouter>
+  );
+}
+
+export default App;

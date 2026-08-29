@@ -1,0 +1,132 @@
+# docker-compose.yml — Orquestração dos serviços do JCL-Chat
+#
+# Serve para subir todos os serviços de uma vez com: docker compose up
+#
+# Serviços:
+#   frontend        : React + Vite (porta 3000)
+#   realtime        : Elixir/Phoenix sockets (porta 4000)
+#   api             : Python/FastAPI (porta 8000)
+#   mass-messaging  : Rust/axum (porta 8080)
+#   db              : PostgreSQL (porta 5432)
+#
+# Variáveis de ambiente: copie .env.example para .env antes de subir
+name: jcl-chat
+
+services:
+  # ---------- Banco de dados ----------
+  db:
+    image: postgres:16-alpine
+    container_name: jcl-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-jcl_chat}
+      POSTGRES_USER: ${POSTGRES_USER:-jcl}
+      # Em produção, defina essa senha no seu .env
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-jcl_dev_password}
+    ports:
+      # "host:container" — vazamos a porta para debug local
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      # Persiste os dados mesmo se o container for recriado
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-jcl}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ---------- Frontend (React/Vite) ----------
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: jcl-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:8000}
+      VITE_WS_URL: ${VITE_WS_URL:-http://localhost:4000}
+    depends_on:
+      - api
+      - realtime
+    # Mantém o Vite em modo dev (recarregamento automático)
+    command: npm run dev -- --host 0.0.0.0
+
+  # ---------- Realtime (Elixir/Phoenix) ----------
+  realtime:
+    build:
+      context: ./realtime
+      dockerfile: Dockerfile
+    container_name: jcl-realtime
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    environment:
+      PORT: "4000"
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE:-dev_secret_key_change_me}
+      POSTGRES_HOST: db
+      POSTGRES_PORT: "5432"
+      POSTGRES_DB: ${POSTGRES_DB:-jcl_chat}
+      POSTGRES_USER: ${POSTGRES_USER:-jcl}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-jcl_dev_password}
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:4000/api/health || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+
+  # ---------- API (Python/FastAPI) ----------
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: jcl-api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      SECRET_KEY: ${SECRET_KEY:-dev_secret_change_me}
+      POSTGRES_HOST: db
+      POSTGRES_PORT: "5432"
+      POSTGRES_DB: ${POSTGRES_DB:-jcl_chat}
+      POSTGRES_USER: ${POSTGRES_USER:-jcl}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-jcl_dev_password}
+      CORS_ORIGINS: ${CORS_ORIGINS:-["http://localhost:3000"]}
+    volumes:
+      # Monta o código-fonte para recarregar em dev
+      - ./api/src:/app/src
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8000/api/health || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+
+  # ---------- Mass-messaging (Rust) ----------
+  mass-messaging:
+    build:
+      context: ./mass-messaging
+      dockerfile: Dockerfile
+    container_name: jcl-mass-messaging
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      PORT: "8080"
+    depends_on:
+      - db
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/api/health || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+
+# Volume nomeado para o PostgreSQL
+volumes:
+  postgres_data:

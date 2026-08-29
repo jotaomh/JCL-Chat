@@ -1,0 +1,39 @@
+# requirements.txt — Dependências do serviço API (Python/FastAPI)
+#
+# Instale via: pip install -r requirements.txt
+# Congele as versões exatas com: pip freeze > requirements.lock.txt
+
+# Web framework
+fastapi==0.115.6
+
+# Servidor ASGI (Uvicorn)
+uvicorn[standard]==0.34.0
+
+# Banco de dados (opcional para esta fase)
+# SQLAlchemy para ORM
+sqlalchemy==2.0.36
+
+# PostgreSQL driver
+psycopg2-binary==2.9.10
+
+# Migrações
+alembic==1.14.0
+
+# Pydantic para validação de dados
+pydantic==2.10.4
+pydantic-settings==2.7.0
+
+# Validação de email (usada pelo pydantic EmailStr)
+email-validator==2.2.0
+
+# Autenticação (JWT)
+PyJWT==2.10.1
+
+# Útil para passar hash de senhas
+passlib[bcrypt]==1.7.4
+
+# Leitura de variáveis de ambiente
+python-dotenv==1.0.1
+
+# CORS (permitir que o frontend acesse a API)
+python-multipart==0.0.20

@@ -1,0 +1,24 @@
+# Elixir / Mix
+/_build/
+/cover/
+/deps/
+/doc/
+/erl_crash.dump
+*.ez
+jcl_chat-*.tar
+/priv/static/
+
+# Environment
+.env
+.env.local
+
+# tmp
+/tmp/
+
+# Node (se usado para assets)
+/node_modules/
+
+# Editor
+.vscode/
+.idea/
+*.swp
