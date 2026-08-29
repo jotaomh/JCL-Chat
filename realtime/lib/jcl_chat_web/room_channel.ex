@@ -14,13 +14,11 @@ defmodule JclChatWeb.RoomChannel do
   # Chamado quando um cliente pede para entrar no tópico "room:exemplo"
   @impl true
   def join("room:lobby", _payload, socket) do
-    # Limite de tópicos por socket (segurança básica)
-    if socket_topics(socket) > 10 do
-      {:error, %{reason: "limite_de_topicos"}}
-    else
-      send(self(), :after_join)
-      {:ok, %{message: "Bem-vindo a sala!"}, socket}
-    end
+    # TODO: implementar limite de tópicos por socket como medida de segurança
+    # (isso exige rastrear os joins do socket em um nível acima do channel,
+    # já que cada processo de channel cuida de um único tópico)
+    send(self(), :after_join)
+    {:ok, %{message: "Bem-vindo a sala!"}, socket}
   end
 
   # Qualquer outro tópico "room:*" é aceito
