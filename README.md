@@ -271,6 +271,132 @@ docker compose down -v
 
 ---
 
+## 🐘 Banco de Dados e Como Rodar do Zero (para iniciantes)
+
+> Se você é novo em Docker/backend, esta seção explica com calma como subir
+> o projeto do zero e como "espiar" dentro do banco de dados para ver os
+> usuários que você cadastrar. Tudo é feito pelo terminal, sem precisar
+> instalar nada além do **Docker**.
+
+### Passo a passo para iniciar o projeto do zero
+
+1. **Entre na pasta do projeto** (onde está o arquivo `docker-compose.yml`):
+
+   ```bash
+   cd JCL-Chat
+   ```
+
+2. **Crie o arquivo de ambiente** a partir do modelo. Isso "liga" as variáveis
+   de configuração (banco, chaves, URLs) sem você precisar inventar valores:
+
+   ```bash
+   cp .env.example .env
+   ```
+
+3. **Suba todos os serviços** (frontend, api, realtime, mass-messaging e o
+   PostgreSQL). O `--build` compila as imagens na primeira vez:
+
+   ```bash
+   docker compose up --build
+   ```
+
+   - Rode com `-d` para voltar a usar o terminal e deixar tudo rodando no
+     "fundo": `docker compose up --build -d`.
+   - **A primeira vez demora** (baixa imagens e compila). Nas próximas é rápido.
+
+4. **Confira se subiu certo:**
+
+   ```bash
+   docker compose ps
+   ```
+
+   - Os serviços devem aparecer com status **`Up`** e, onde houver, **(healthy)**.
+   - O serviço da **api** aplica as migrações do banco automaticamente ao subir
+     (cria a tabela `users`) e só então inicia o servidor.
+   - Se algo falhar, veja os logs com `docker compose logs -f`.
+
+5. **Abra o projeto no navegador**: <http://localhost:3000> (frontend) e
+   <http://localhost:8000/docs> (documentação interativa da API).
+
+### Como ver os dados salvos no banco
+
+Você pode olhar dentro do PostgreSQL de duas formas: pelo **terminal** ou por
+uma **ferramenta gráfica**.
+
+#### Opção A — Pelo terminal (psql)
+
+O `psql` é o programa de terminal do PostgreSQL. Ele **já está dentro** do
+container do banco, então não precisa instalar nada:
+
+```bash
+# "Entra" dentro do container do banco e abre o psql.
+# -U jcl    → usuário do banco (veja POSTGRES_USER no seu .env)
+# -d jcl_chat → nome do banco (veja POSTGRES_DB no seu .env)
+docker compose exec db psql -U jcl -d jcl_chat
+```
+
+Dentro do psql, o prompt muda para `jcl_chat=#`. Comandos úteis:
+
+```sql
+\dt                 -- lista as tabelas do banco (deve aparecer "users")
+SELECT * FROM users;  -- mostra todos os usuários cadastrados
+\q                  -- sai do psql
+```
+
+> **Dica:** cadastre um usuário no site (ou via API) e rode o `SELECT * FROM users;`
+> para vê-lo aparecer. A coluna `password_hash` guarda a senha **transformada
+> em hash** (começa com `$2b$`), nunca a senha em texto puro — é assim que deve ser.
+
+#### Opção B — Com uma ferramenta gráfica (opcional)
+
+Se preferir não usar terminal, instale um programa com interface gráfica, por
+exemplo o **DBeaver** (grátis, <https://dbeaver.io>) ou o **TablePlus**
+(<https://tableplus.com>). Os dados que ele pede para conectar são:
+
+| Campo | Valor |
+|-------|-------|
+| Tipo/banco | PostgreSQL |
+| Host | `localhost` |
+| Porta | `5432` (ou o valor de `POSTGRES_PORT` no seu `.env`) |
+| Banco de dados | o valor de `POSTGRES_DB` no seu `.env` (padrão `jcl_chat`) |
+| Usuário | o valor de `POSTGRES_USER` no seu `.env` (padrão `jcl`) |
+| Senha | o valor de `POSTGRES_PASSWORD` no seu `.env` |
+
+> 🔒 **Segurança:** olhe a porta/usuário/senha **no seu próprio `.env`** (que não
+> é versionado). Não escreva a senha real em lugar nenhum (nem aqui, nem em
+> código, nem em comentários que vão para o Git).
+
+### Como rodar a migração do banco manualmente
+
+As migrações (criar/alterar tabelas) normalmente rodam sozinhas quando a `api`
+sobe. Mas se precisar aplicá-las manualmente — por exemplo depois de recriar o
+banco — rode:
+
+```bash
+docker compose exec api alembic upgrade head
+```
+
+Isso executa o Alembic **dentro do container da API**, criando/atualizando as
+tabelas para a versão mais recente (`head`).
+
+### Como resetar o banco de dados do zero
+
+"Resetar" apaga **todos** os dados e recria o banco limpo. Útil quando você quer
+começar do zero ou consertou algo que quebrou o schema.
+
+```bash
+# 1) Para os containers E apaga o volume do PostgreSQL (os dados somem!)
+docker compose down -v
+
+# 2) Sobe tudo de novo (a api recria as tabelas automaticamente via migração)
+docker compose up --build
+```
+
+> ⚠️ **Atenção:** o `-v` apaga **todos** os dados armazenados (usuários, etc.).
+> Só use quando realmente quiser recomeçar do zero.
+
+---
+
 ## 🧪 Rodando Cada Serviço Isoladamente (para Debug)
 
 Cada serviço pode rodar fora do Docker, ideal para desenvolver e debugar com recarga automática.
