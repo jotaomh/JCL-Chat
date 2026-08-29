@@ -27,11 +27,16 @@ COPY --from=build /install /usr/local
 # Copia o código-fonte
 COPY src ./src
 
+# Copia os arquivos de migração (Alembic)
+COPY alembic.ini .
+COPY alembic ./alembic
+
 # Variável de ambiente (a real será injetada pelo docker-compose)
 ENV PYTHONUNBUFFERED=1
 
 # Expoõe a porta da API
 EXPOSE 8000
 
-# Comando para iniciar o servidor Uvicorn
-CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+# Comando para iniciar o servidor: primeiro aplica as migrações de banco
+# (cria/atualiza as tabelas), depois sobe o Uvicorn.
+CMD ["sh", "-c", "alembic upgrade head && exec uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload"]

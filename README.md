@@ -19,7 +19,7 @@ O **JCL-Chat** é um projeto de estudo que almeja replicar as funcionalidades pr
 A escolha da stack foi pensada para **aprendizado** e para **custos baixos** (estudante): todas as tecnologias utilizadas são gratuitas, open-source e com documentação rica.
 
 ### Identidade visual
-- Paleta base: preto, branco e vermelho de destaque (inspirado no escudo do Corinthians 🦅)
+- Paleta base: preto/branco + **azul bebê** de destaque
 - Dois temas alternáveis nas configurações:
   - **Gamer**: dark mode "gamer" (padrão)
   - **Escritório**: tema claro/neutro
@@ -77,13 +77,16 @@ JCL-Chat/
 │       └── jcl_chat_web/ # Camada web (Endpoint, Socket, Channels)
 │
 ├── api/                  # Python / FastAPI (REST)
+│   ├── alembic.ini       # Configuração das migrações de banco
+│   ├── alembic/          # Migrações (env.py + versions/)
+│   ├── requirements.txt  # Dependências Python
 │   └── src/
 │       ├── main.py       # Ponto de entrada da API
 │       └── app/
 │           ├── routers/  # Conjuntos de endpoints (auth, users...)
 │           ├── schemas/  # Validação de dados (Pydantic)
 │           ├── models/   # Modelos de banco (SQLAlchemy)
-│           ├── services/ # Lógica de negócio
+│           ├── services/ # Lógica de negócio (senha/JWT em security.py)
 │           └── config/   # Configurações
 │
 ├── mass-messaging/       # Rust (axum) — broadcast em massa
@@ -216,6 +219,46 @@ curl http://localhost:8080/
 curl http://localhost:8080/api/health
 ```
 
+### 🔐 Autenticação (cadastro + login)
+
+A API já tem autenticação real usando **JWT** e senhas com hash **bcrypt** (nunca salvas em texto puro). Fluxo ponta a ponta:
+
+```bash
+# 1) Cadastro — retorna os dados do usuário (sem token)
+curl -X POST http://localhost:8000/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"username":"fulano","email":"fulano@email.com","password":"minhasenha"}'
+
+# 2) Login — retorna o token JWT (validade de 24h)
+curl -X POST http://localhost:8000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"fulano@email.com","password":"minhasenha"}'
+
+# 3) /me — endpoint protegido; envia o token no header Authorization
+curl http://localhost:8000/api/users/me \
+  -H "Authorization: Bearer <TOKEN_AQUI>"
+```
+
+- **`POST /api/auth/register`**: valida se `username`/`email` já existem (erro **409** se repetem), gera o hash bcrypt da senha e salva. NUNCA devolve o hash.
+- **`POST /api/auth/login`**: valida as credenciais e devolve o JWT. Em caso de erro retorna **401** com mensagem genérica (não revela se errou o e-mail ou a senha).
+- **`GET /api/users/me`**: protegido por token (requer header `Authorization: Bearer <token>`); devolve os dados do usuário logado.
+
+### 🗃️ Migrações (Alembic)
+
+As tabelas do banco são gerenciadas pelo **Alembic**. Ao subir o container da API, o `alembic upgrade head` roda **automaticamente** antes do Uvicorn (veja o `CMD` do `api/Dockerfile`).
+
+Para rodar manualmente (por exemplo, fora do Docker):
+
+```bash
+cd api
+# O comando lê a DATABASE_URL das variáveis de ambiente (settings.py)
+alembic upgrade head    # aplica as migrações pendentes
+alembic downgrade base  # desfaz todas
+alembic revision --autogenerate -m "descricao"   # gera nova migração a partir dos modelos
+```
+
+A migration inicial (`alembic/versions/0001_...`) cria a tabela `users`.
+
 ### Parar/limpar tudo
 
 ```bash
@@ -293,19 +336,20 @@ Todas as variáveis estão documentadas no arquivo **`.env.example`** (na raiz e
 | `SECRET_KEY_BASE` | realtime | Chave secreta do Phoenix |
 | `SECRET_KEY` / `ALGORITHM` | api | Chave e algoritmo do JWT |
 | `CORS_ORIGINS` | api | Origens permitidas para o frontend |
-| `VITE_API_URL` / `VITE_WS_URL` | frontend | URLs dos backends |
+| `VITE_API_URL` / `VITE_WS_URL` | frontend | URLs dos backends (usadas pelo navegador) |
+| `VITE_API_PROXY_TARGET` / `VITE_SOCKET_PROXY_TARGET` | frontend | Alvos do proxy do Vite (Docker usa os nomes dos serviços `api`/`realtime`) |
 
 ---
 
 ## 🗺️ Roadmap (próximas etapas)
 
-- [x] **Etapa 1 (atual)**: Estrutura do projeto + "hello world" em cada serviço + Docker Compose
-- [ ] **Etapa 2**: Banco de dados + autenticação real (JWT) + cadastro/login
+- [x] **Etapa 1**: Estrutura do projeto + "hello world" em cada serviço + Docker Compose
+- [x] **Etapa 2 (parcial)**: Banco de dados + autenticação real (JWT) + cadastro/login + endpoint `/me`
 - [ ] **Etapa 3**: Sistema de amizades + grupos/comunidades
 - [ ] **Etapa 4**: Chat de texto em tempo real (Phoenix Channels)
 - [ ] **Etapa 5**: Chamadas de voz/vídeo (WebRTC)
 - [ ] **Etapa 6**: Compartilhamento de tela
-- [ ] **Etapa 7**: Temas gamer/escritório funcionais nas configurações
+- [ ] **Etapa 7**: Temas gamer/escritório funcionais nas configurações (destaque já trocado para azul bebê)
 
 ---
 

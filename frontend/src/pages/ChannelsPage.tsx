@@ -9,13 +9,14 @@ import { useAuth } from '../hooks/useAuth';
 import { Link } from 'react-router-dom';
 
 export function ChannelsPage() {
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
 
   return (
     <div className="channels-page">
       <header className="app-header">
         <h1>JCL-Chat</h1>
         <div className="header-actions">
+          {user && <span className="header-user">👤 {user.username}</span>}
           <button onClick={logout}>Sair</button>
         </div>
       </header>

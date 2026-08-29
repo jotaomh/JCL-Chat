@@ -99,8 +99,8 @@
 }
 
 .error-message {
-  background: #ff000020;
-  color: #ff6666;
+  background: color-mix(in srgb, var(--color-accent) 15%, transparent);
+  color: var(--color-accent);
   padding: 0.75rem;
   border-radius: var(--border-radius);
   margin-bottom: 1rem;
@@ -122,6 +122,12 @@
   display: flex;
   align-items: center;
   gap: 1rem;
+}
+
+/* Indicação visual de "usuário logado" no header */
+.header-user {
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
 }
 
 /* Layout principal */

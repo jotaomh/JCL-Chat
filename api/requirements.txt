@@ -29,8 +29,12 @@ email-validator==2.2.0
 # Autenticação (JWT)
 PyJWT==2.10.1
 
-# Útil para passar hash de senhas
+# Hashing de senhas (passlib + bcrypt)
+# passlib é o wrapper; bcrypt é o algoritmo em si.
+# IMPORTANTE: passlib 1.7.4 quebra com bcrypt >= 4.1 (erro no self-test com
+# senha > 72 bytes). Por isso fixamos bcrypt em 4.0.1.
 passlib[bcrypt]==1.7.4
+bcrypt==4.0.1
 
 # Leitura de variáveis de ambiente
 python-dotenv==1.0.1

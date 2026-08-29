@@ -49,6 +49,10 @@ services:
     environment:
       VITE_API_URL: ${VITE_API_URL:-http://localhost:8000}
       VITE_WS_URL: ${VITE_WS_URL:-http://localhost:4000}
+      # Alvos do proxy do Vite dentro do container (nomes dos serviços).
+      # Em dev fora do Docker, deixe vazio para usar o padrão (localhost).
+      VITE_API_PROXY_TARGET: ${VITE_API_PROXY_TARGET:-http://api:8000}
+      VITE_SOCKET_PROXY_TARGET: ${VITE_SOCKET_PROXY_TARGET:-http://realtime:4000}
     volumes:
       # Monta o código-fonte para hot-reload ao editar (mantém node_modules do container)
       - ./frontend:/app
@@ -104,6 +108,9 @@ services:
     volumes:
       # Monta o código-fonte para recarregar em dev
       - ./api/src:/app/src
+      # Monta os arquivos de migração (Alembic) para poder editar em dev
+      - ./api/alembic.ini:/app/alembic.ini
+      - ./api/alembic:/app/alembic
     depends_on:
       db:
         condition: service_healthy

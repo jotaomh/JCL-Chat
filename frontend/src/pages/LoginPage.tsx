@@ -8,13 +8,14 @@
 // use: quando o usuário não está autenticado, é redirecionado para aqui
 
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
-import { login } from '../services/api';
+import { register, login } from '../services/api';
 
 export function LoginPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login: authLogin } = useAuth();
   const { theme, toggleTheme } = useTheme();
 
@@ -23,23 +24,30 @@ export function LoginPage() {
   const [error, setError] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
   const [username, setUsername] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
 
     try {
       if (isSignUp) {
-        // TODO: implementar cadastro real
-        // const data = await register(username, email, password);
-        alert('Cadastro em breve!');
+        // 1) Cadastra o usuário (o backend devolve só os dados, sem token)
+        await register(username, email, password);
+        // 2) Faz login automático com as mesmas credenciais para obter o token
+        const data = await login(email, password);
+        authLogin(data.user, data.token);
+        navigate(location.state?.from?.pathname || '/channels', { replace: true });
       } else {
         const data = await login(email, password);
         authLogin(data.user, data.token);
-        navigate('/channels');
+        navigate(location.state?.from?.pathname || '/channels', { replace: true });
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao autenticar');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -94,8 +102,8 @@ export function LoginPage() {
           />
         </div>
 
-        <button type="submit" className="btn-primary">
-          {isSignUp ? 'Cadastrar' : 'Entrar'}
+        <button type="submit" className="btn-primary" disabled={loading}>
+          {loading ? 'Aguarde...' : isSignUp ? 'Cadastrar' : 'Entrar'}
         </button>
 
         <button type="button" className="btn-secondary" onClick={() => setIsSignUp(!isSignUp)}>

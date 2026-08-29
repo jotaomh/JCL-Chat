@@ -29,5 +29,5 @@ body,
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-accent, #cc0000);
+  background: var(--color-accent, #a8d8f0);
 }

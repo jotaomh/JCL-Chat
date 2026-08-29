@@ -15,8 +15,8 @@
   --color-bg-tertiary: #2a2a2a;
   --color-text-primary: #ffffff;
   --color-text-secondary: #b0b0b0;
-  --color-accent: #cc0000;
-  --color-accent-hover: #ff0000;
+  --color-accent: #a8d8f0;
+  --color-accent-hover: #89c2e8;
   --color-border: #333333;
 
   /* Tipografia */
@@ -47,8 +47,8 @@ body.office-theme {
   --color-bg-tertiary: #e8e8e8;
   --color-text-primary: #1a1a1a;
   --color-text-secondary: #555555;
-  --color-accent: #b30000;
-  --color-accent-hover: #800000;
+  --color-accent: #89c2e8;
+  --color-accent-hover: #5a9bcf;
   --color-border: #cccccc;
 }
 

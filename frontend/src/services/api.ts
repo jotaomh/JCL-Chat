@@ -47,15 +47,17 @@ async function apiRequest<T>(path: string, options: RequestInit = {}): Promise<T
 
 // === Autenticação ===
 
-// Cadastra um novo usuário
+// Cadastra um novo usuário.
+// O backend devolve apenas os dados do usuário (NÃO um token) — para
+// entrar automaticamente, o frontend chama login() logo em seguida.
 export async function register(username: string, email: string, password: string) {
-  return apiRequest<{ user: import('../types').User; token: string }>('/auth/register', {
+  return apiRequest<import('../types').User>('/auth/register', {
     method: 'POST',
     body: JSON.stringify({ username, email, password }),
   });
 }
 
-// Faz login e retorna o token
+// Faz login e retorna o token + dados do usuário
 export async function login(email: string, password: string) {
   return apiRequest<{ user: import('../types').User; token: string }>('/auth/login', {
     method: 'POST',
@@ -64,6 +66,12 @@ export async function login(email: string, password: string) {
 }
 
 // === Usuários ===
+
+// Retorna os dados do usuário autenticado (via token JWT).
+// Usado para verificar se o token ainda é válido.
+export async function getMe() {
+  return apiRequest<import('../types').User>('/users/me');
+}
 
 // Lista todos os usuários
 export async function getUsers() {

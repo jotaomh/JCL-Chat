@@ -1,9 +1,21 @@
 # routers/users.py — Endpoints de usuários
 #
-# Lista e consulta de usuários (esqueleto).
-from fastapi import APIRouter
+# Lista e consulta de usuários (esqueleto) + endpoint protegido /me.
+from fastapi import APIRouter, Depends
+
+from src.app.models.user import User
+from src.app.services.security import get_current_user
 
 router = APIRouter()
+
+
+@router.get("/me")
+def get_me(current_user: User = Depends(get_current_user)):
+    """Retorna os dados do usuário autenticado (via token JWT).
+
+    Uso: GET /api/users/me com header 'Authorization: Bearer <token>'.
+    """
+    return current_user.as_dict
 
 
 @router.get("")
