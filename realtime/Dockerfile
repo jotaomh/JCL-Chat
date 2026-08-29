@@ -5,7 +5,7 @@
 #   2. Imagem de runtime: apenas o aplicativo (mais leve)
 
 # ---------- Estágio 1: Build ----------
-FROM hexpm/elixir:1.18.5-erlang-27.1.3-alpine-3.22.5 AS build
+FROM hexpm/elixir:1.18.5-erlang-25.2.3-alpine-3.22.5 AS build
 
 # Instala dependências do sistema
 RUN apk add --no-cache build-base git curl ca-certificates
@@ -26,7 +26,7 @@ COPY lib ./lib
 RUN MIX_ENV=prod mix compile || true
 
 # ---------- Estágio 2: Runtime ----------
-FROM hexpm/elixir:1.18.5-erlang-27.1.3-alpine-3.22.5 AS runtime
+FROM hexpm/elixir:1.18.5-erlang-25.2.3-alpine-3.22.5 AS runtime
 
 RUN apk add --no-cache libstdc++ ncurses-libs openssl
 
