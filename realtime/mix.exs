@@ -33,6 +33,8 @@ defmodule JclChat.MixProject do
     [
       # Framework web para tempo real
       {:phoenix, "~> 1.7.12"},
+      # PubSub distribuído (usado pelo Phoenix.Presence e channels)
+      {:phoenix_pubsub, "~> 2.1"},
       # Server HTTP
       {:plug_cowboy, "~> 2.0"},
       # JSON helpers

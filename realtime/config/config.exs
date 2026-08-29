@@ -6,6 +6,8 @@ config :jcl_chat, JclChatWeb.Endpoint,
   url: [host: "localhost"],
   http: [port: String.to_integer(System.get_env("PORT") || "4000")],
   secret_key_base: System.get_env("SECRET_KEY_BASE") || "dev_secret_key_change_me",
+  # Nome do servidor PubSub usado pelos channels e pelo Presence
+  pubsub_server: JclChat.PubSub,
   server: true
 
 if config_env() == :prod do

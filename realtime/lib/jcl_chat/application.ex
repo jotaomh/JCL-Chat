@@ -10,9 +10,11 @@ defmodule JclChat.Application do
   @impl true
   def start(_type, _args) do
     children = [
+      # PubSub distribuído (necessário para channels e presence)
+      {Phoenix.PubSub, name: JclChat.PubSub},
       # Inicia o servidor HTTP/WebSocket
       JclChatWeb.Endpoint,
-      # Supervisor de tópicos (channels) — broadcast em tempo real
+      # Presença (quem está online)
       JclChatWeb.Presence
     ]
 

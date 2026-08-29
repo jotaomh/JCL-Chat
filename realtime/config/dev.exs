@@ -9,5 +9,5 @@ config :jcl_chat, JclChat.Repo,
   username: System.get_env("POSTGRES_USER", "jcl"),
   password: System.get_env("POSTGRES_PASSWORD", "jcl_dev_password"),
   hostname: System.get_env("POSTGRES_HOST", "db"),
-  database: System.get_env("POSTGRES_DB", "jcl_chat_dev"),
+  database: System.get_env("POSTGRES_DB", "jcl_chat"),
   pool_size: 10

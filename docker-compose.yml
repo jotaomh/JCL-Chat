@@ -39,7 +39,9 @@ services:
   frontend:
     build:
       context: ./frontend
-      dockerfile: Dockerfile
+      # Em desenvolvimento usamos a imagem com Node/npm (Vite com hot-reload)
+      # Para "produção", troque para `dockerfile: Dockerfile` (build + nginx)
+      dockerfile: Dockerfile.dev
     container_name: jcl-frontend
     restart: unless-stopped
     ports:
@@ -47,11 +49,14 @@ services:
     environment:
       VITE_API_URL: ${VITE_API_URL:-http://localhost:8000}
       VITE_WS_URL: ${VITE_WS_URL:-http://localhost:4000}
+    volumes:
+      # Monta o código-fonte para hot-reload ao editar (mantém node_modules do container)
+      - ./frontend:/app
+      - /app/node_modules
     depends_on:
       - api
       - realtime
-    # Mantém o Vite em modo dev (recarregamento automático)
-    command: npm run dev -- --host 0.0.0.0
+    # O comando dev já está no Dockerfile.dev (npm run dev -- --host 0.0.0.0)
 
   # ---------- Realtime (Elixir/Phoenix) ----------
   realtime:
@@ -74,7 +79,7 @@ services:
       db:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:4000/api/health || exit 1"]
+      test: ["CMD-SHELL", "curl -fsS http://localhost:4000/api/health || exit 1"]
       interval: 15s
       timeout: 10s
       retries: 5
@@ -103,7 +108,7 @@ services:
       db:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:8000/api/health || exit 1"]
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8000/api/health || exit 1"]
       interval: 15s
       timeout: 10s
       retries: 5
@@ -122,7 +127,7 @@ services:
     depends_on:
       - db
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/api/health || exit 1"]
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/api/health || exit 1"]
       interval: 15s
       timeout: 10s
       retries: 5

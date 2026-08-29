@@ -6,14 +6,15 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 3000,
-    open: true,
+    strictPort: true,
     // Proxy para as rotas da API FastAPI em desenvolvimento
     proxy: {
       '/api': {
         target: 'http://localhost:8000',
         changeOrigin: true,
       },
-      '/socket.io': {
+      // Socket WebSocket do Phoenix (channels) em desenvolvimento
+      '/socket': {
         target: 'http://localhost:4000',
         ws: true,
         changeOrigin: true,

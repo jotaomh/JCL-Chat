@@ -5,11 +5,11 @@
 defmodule JclChatWeb.Presence do
   use Phoenix.Presence,
     otp_app: :jcl_chat,
-    pubsub_server: JclChatWeb.Endpoint
+    pubsub_server: JclChat.PubSub
 
   # Função que define os metadados públicos de cada usuário
   @impl true
-  def fetch(topic, presences) do
+  def fetch(_topic, presences) do
     query =
       for {key, %{metas: metas}} <- presences, into: %{} do
         {key, %{metas: metas, user: "unknown"}}

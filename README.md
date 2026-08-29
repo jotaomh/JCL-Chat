@@ -65,8 +65,10 @@ JCL-Chat/
 │   │   ├── utils/        # Funções auxiliares
 │   │   ├── App.tsx       # Componente raiz + rotas
 │   │   └── main.tsx      # Ponto de entrada (monta o React)
-│   ├── Dockerfile        # Build de produção (nginx)
-│   └── nginx.conf        # Config do servidor de produção
+│   ├── Dockerfile        # Build de PRODUÇÃO (multi-stage + nginx)
+│   ├── Dockerfile.dev    # Build de DESENVOLVIMENTO (Node + Vite, hot-reload)
+│   ├── nginx.conf        # Config do servidor de produção
+│   └── .env.example      # Variáveis de ambiente do frontend
 │
 ├── realtime/             # Elixir / Phoenix (WebSocket + Channels)
 │   ├── config/           # Configurações (dev, prod, etc.)
@@ -189,6 +191,11 @@ docker compose ps
 | API (FastAPI + Swagger) | 8000 | <http://localhost:8000> / <http://localhost:8000/docs> |
 | Mass-messaging (Rust) | 8080 | <http://localhost:8080> |
 | PostgreSQL | 5432 | (interno, via containers) |
+
+> 📌 **Desenvolvimento vs Produção (Docker):**
+> - O `docker-compose.yml` usa, por padrão, os **Dockerfiles de desenvolvimento** para rodar o projeto localmente (frontend rodeia o **Vite** com hot-reload na porta 3000; o realtime é uma imagem de estágio único que compila e sobe com `mix phx.server`).
+> - Para construir a versão de **produção**, altere no `docker-compose.yml` o campo `dockerfile:` do serviço `frontend` de `Dockerfile.dev` para `Dockerfile` (gera estáticos servidos por **nginx** na porta **80** interna).
+> - As portas **3000 (frontend), 4000 (realtime), 8000 (api) e 8080 (mass-messaging)** são mantidas consistentes entre `EXPOSE`, o `docker-compose.yml` e o servidor real em cada container.
 
 ### Testando o "hello world" de cada serviço
 

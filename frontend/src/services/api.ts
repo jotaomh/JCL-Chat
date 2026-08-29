@@ -10,6 +10,9 @@
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
+// Todas as rotas da API FastAPI são servidas sob o prefixo /api.
+const API_PREFIX = '/api';
+
 // Obtém o token de autenticação do localStorage
 function getToken(): string | null {
   return localStorage.getItem('token');
@@ -26,7 +29,7 @@ function getAuthHeaders(): HeadersInit {
 
 // Wrapper genérico para fetch
 async function apiRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const response = await fetch(`${API_BASE_URL}${path}`, {
+  const response = await fetch(`${API_BASE_URL}${API_PREFIX}${path}`, {
     ...options,
     headers: {
       ...getAuthHeaders(),

@@ -33,6 +33,7 @@ defmodule JclChatWeb.RoomChannel do
   end
 
   # Executa depois do join
+  @impl true
   def handle_info(:after_join, socket) do
     # Informa todos na sala que o usuário entrou (presença)
     push(socket, "user_joined", %{user: "anônimo"})

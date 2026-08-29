@@ -25,10 +25,8 @@ defmodule JclChatWeb.Router do
     get "/health", HealthController, :health
   end
 
-  # Rota do Socket de usuário
-  scope "/socket" do
-    get "/", JclChatWeb.UserSocket, :index
-  end
+  # O socket WebSocket é servido automaticamente pelo Endpoint
+  # na rota /socket/websocket (não é preciso rota manual aqui).
 
   # Qualquer outra rota retorna 404 JSON
   match :*, "/*path", JclChatWeb.NotFoundController, :index
