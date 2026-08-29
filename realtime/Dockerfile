@@ -1,47 +1,32 @@
 # Dockerfile — Serviço realtime (Elixir/Phoenix)
 #
-# Multi-stage build:
-#   1. Imagem de build: compila as dependências e o aplicativo
-#   2. Imagem de runtime: apenas o aplicativo (mais leve)
+# Versão simplificada de estágio único, para a fase inicial do projeto.
+# Mais pra frente, quando o projeto estiver mais maduro, vale migrar
+# para um build multi-estágio com "mix release" (imagem final menor).
 
-# ---------- Estágio 1: Build ----------
-FROM hexpm/elixir:1.18.5-erlang-25.2.3-alpine-3.22.5 AS build
+FROM hexpm/elixir:1.18.5-erlang-25.2.3-alpine-3.22.5
 
 # Instala dependências do sistema
-RUN apk add --no-cache build-base git curl ca-certificates
+RUN apk add --no-cache build-base git curl ca-certificates inotify-tools
 
-# Define o working directory
+# Instala Hex e Rebar (gerenciadores de pacotes do Elixir/Erlang)
+RUN mix local.hex --force && mix local.rebar --force
+
+ENV MIX_ENV=dev
+
 WORKDIR /app
 
 # Copia os arquivos de dependências primeiro (aproveitamento de cache)
 COPY mix.exs ./
 COPY mix.lock* ./
-RUN mix local.hex --force && mix local.rebar --force
-RUN mix deps.get --only prod || true
-RUN MIX_ENV=prod mix deps.compile || true
+RUN mix deps.get
 
-# Copia o código-fonte e compila
+# Copia o restante do código-fonte
 COPY config ./config
 COPY lib ./lib
-RUN MIX_ENV=prod mix compile || true
 
-# ---------- Estágio 2: Runtime ----------
-FROM hexpm/elixir:1.18.5-erlang-25.2.3-alpine-3.22.5 AS runtime
-
-RUN apk add --no-cache libstdc++ ncurses-libs openssl
-
-ENV MIX_ENV=prod
-
-WORKDIR /app
-
-# Copia o build do estágio anterior
-COPY --from=build /app/_build ./_build
-COPY mix.exs ./
-COPY mix.lock* ./
-
-# Copia as configurações
-COPY config ./config
-COPY lib ./lib
+# Compila o projeto
+RUN mix compile
 
 EXPOSE 4000
 
