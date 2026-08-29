@@ -30,6 +30,8 @@ FROM hexpm/elixir:1.18.5-erlang-25.2.3-alpine-3.22.5 AS runtime
 
 RUN apk add --no-cache libstdc++ ncurses-libs openssl
 
+ENV MIX_ENV=prod
+
 WORKDIR /app
 
 # Copia o build do estágio anterior
@@ -44,4 +46,4 @@ COPY lib ./lib
 EXPOSE 4000
 
 # Comando padrão para iniciar o servidor
-CMD ["elixir", "--name", "jcl_realtime", "-S", "mix", "phx.server"]
+CMD ["mix", "phx.server"]
