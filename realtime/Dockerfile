@@ -5,18 +5,15 @@
 #   2. Imagem de runtime: apenas o aplicativo (mais leve)
 
 # ---------- Estágio 1: Build ----------
-FROM hexpm/elixir:1.17.3-erlang-27.2.3-debian-bookworm-20250113 AS build
+FROM hexpm/elixir:1.18.5-erlang-27.1.3-alpine-3.22.5 AS build
 
 # Instala dependências do sistema
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential git curl ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache build-base git curl ca-certificates
 
 # Define o working directory
 WORKDIR /app
 
 # Copia os arquivos de dependências primeiro (aproveitamento de cache)
-# (mix.lock é gerado no primeiro `mix deps.get`; tolera ausência no esqueleto)
 COPY mix.exs ./
 COPY mix.lock* ./
 RUN mix local.hex --force && mix local.rebar --force
@@ -29,12 +26,14 @@ COPY lib ./lib
 RUN MIX_ENV=prod mix compile || true
 
 # ---------- Estágio 2: Runtime ----------
-FROM elixir:1.17.3-erlang-27.2.3-alpine-3.20 AS runtime
+FROM hexpm/elixir:1.18.5-erlang-27.1.3-alpine-3.22.5 AS runtime
+
+RUN apk add --no-cache libstdc++ ncurses-libs openssl
 
 WORKDIR /app
 
 # Copia o build do estágio anterior
-COPY _build ./_build || true
+COPY _build ./_build
 COPY mix.exs ./
 COPY mix.lock* ./
 
