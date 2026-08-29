@@ -33,7 +33,7 @@ RUN apk add --no-cache libstdc++ ncurses-libs openssl
 WORKDIR /app
 
 # Copia o build do estágio anterior
-COPY _build ./_build
+COPY --from=build /app/_build ./_build
 COPY mix.exs ./
 COPY mix.lock* ./
 
