@@ -41,10 +41,29 @@ defmodule JclChat.MixProject do
       {:jason, "~> 1.4"},
       # JWT (validar tokens emitidos pela API Python — HS256)
       {:joken, "~> 2.6"},
-      # Trava numa versão da jose compatível com Erlang/OTP 25
-      # (versões mais novas exigem OTP 27+, que temos evitado por
-      # causa de um bug de certificado TLS com o hex.pm)
-      {:jose, "~> 1.11.10", override: true}
+      # ⚠️ IMPORTANTE — Compatibilidade com Erlang/OTP 25:
+      #
+      # Este projeto está FIXO em Erlang/OTP 25.2.3 (ver Dockerfile) de
+      # propósito, por causa de um bug de certificado TLS do Erlang/OTP 27
+      # com o hex.pm. NÃO altere essa versão do Erlang/OTP.
+      #
+      # Por isso, a versão da jose (usada por baixo dos panos pelo joken) está
+      # travada NA VERSÃO EXATA 1.11.10 — a ÚLTIMA versão que ainda suporta
+      # OTP 25. A partir da 1.11.11, a jose passou a usar o type dynamic()
+      # (que só existe no Erlang/OTP 27+) nos módulos de JSON e o build quebra
+      # com "type dynamic() undefined" no OTP 25. VERIFICADO: 1.11.8, 1.11.9 e
+      # 1.11.10 compilam; 1.11.11 e 1.11.12 NÃO compilam nesse OTP.
+      #
+      # O operador ">="/~> permitiria ao Mix escolher versões mais novas
+      # (1.11.11+) que reintroduzem o bug; por isso usamos a versão exata,
+      # sem "~>". Use override: true para garantir que o joken (que pede
+      # "~> 1.11.12") não force uma versão nova quebrada.
+      #
+      # REGRA GARANTIDA: ao adicionar QUALQUER nova dependência Elixir/Erlang
+      # ao realtime, confira antes se ela é compatível com Erlang/OTP 25.
+      # Muitas libs recentes já assumem OTP 27+ como padrão e vão quebrar
+      # o build nesse projeto.
+      {:jose, "1.11.10", override: true}
     ]
   end
 end

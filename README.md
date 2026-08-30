@@ -423,6 +423,18 @@ mix deps.get          # baixa as dependências
 iex -S mix phx.server # sobe em http://localhost:4000 (com console interativo)
 ```
 
+> 🔒 **Importante — o realtime está fixo em Erlang/OTP 25.2.3** (ver `realtime/Dockerfile`) de
+> propósito, por causa de um bug de certificado TLS do Erlang/OTP 27 com o hex.pm.
+> **Ao adicionar qualquer dependência Elixir/Erlang nova ao `realtime`, confira antes se ela é
+> compatível com OTP 25** — muitas libs recentes já assumem OTP 27+ como padrão e quebram o build.
+>
+> Exemplo concreto: a lib `jose` (que o `joken` usa por baixo para JWT) passou a usar o type
+> `dynamic()` (só existe no OTP 27+) a partir da versão **1.11.11**, quebrando o build no OTP 25 com
+> `type dynamic() undefined`. Por isso `realtime/mix.exs` trava a `jose` na **versão exata `1.11.10`**
+> (a última que suporta OTP 25) com `override: true`. Se encontrar erro parecido ao atualizar deps,
+> é sinal de que alguma dependência passou a exigir OTP 27 — não mude a versão do OTP, e sim a
+> dependência (ou trave-a numa versão compatível).
+
 ### API (Python/FastAPI)
 
 ```bash
