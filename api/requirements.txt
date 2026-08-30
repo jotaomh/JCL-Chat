@@ -41,3 +41,7 @@ python-dotenv==1.0.1
 
 # CORS (permitir que o frontend acesse a API)
 python-multipart==0.0.20
+
+# Envio de e-mail (recuperação de senha) — SDK oficial do Resend
+# https://resend.com/docs/send-with-python
+resend==2.34.0

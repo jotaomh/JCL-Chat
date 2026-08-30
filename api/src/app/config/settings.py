@@ -23,6 +23,16 @@ class Settings(BaseSettings):
     # CORS
     cors_origins: str = os.getenv("CORS_ORIGINS", '["http://localhost:3000"]')
 
+    # E-mail (Resend) — usado no fluxo de recuperação de senha
+    # A chave é um segredo; vive apenas no .env (fora do Git). Sem ela, o
+    # envio de e-mail falha, mas o endpoint de recuperação continua seguro
+    # (responde sempre a mensagem genérica).
+    resend_api_key: str = os.getenv("RESEND_API_KEY", "")
+    # Remetente padrão (testes). Em produção deve virar um domínio próprio
+    # verificado no Resend (o onboarding@resend.dev só entrega para o e-mail
+    # usado no cadastro da conta Resend).
+    email_from: str = os.getenv("EMAIL_FROM", "onboarding@resend.dev")
+
     # URL de conexão completa (para SQLAlchemy)
     @property
     def database_url(self) -> str:
