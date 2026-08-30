@@ -245,7 +245,7 @@ curl http://localhost:8000/api/users/me \
 
 #### Esqueci minha senha (recuperação)
 
-Fluxo em duas etapas, sem e-mail real por enquanto (o link é apenas **logado no console do servidor** — ver `# TODO: integrar serviço de e-mail real` em `api/src/app/routers/auth.py`):
+Fluxo em duas etapas com **e-mail real via Resend** (o link também fica no log do servidor, o que ajuda nos testes locais — ver `api/src/app/routers/auth.py` e `api/src/app/services/email.py`):
 
 ```bash
 # 1) Solicita recuperação — responde SEMPRE a mesma mensagem, existindo ou
@@ -254,15 +254,14 @@ curl -X POST http://localhost:8000/api/auth/forgot-password \
   -H "Content-Type: application/json" \
   -d '{"email":"fulano@email.com"}'
 # -> {"message":"Se este e-mail existir, um link de recuperação foi enviado."}
-#    + no console do servidor: [RECUPERAÇÃO DE SENHA] Link de recuperação: /reset-password?token=...
 
-# 2) Redefine a senha com o token do link (uso único, expira em 1 hora)
+# 2) Redefine a senha com o token recebido por e-mail (uso único, expira em 1h)
 curl -X POST http://localhost:8000/api/auth/reset-password \
   -H "Content-Type: application/json" \
   -d '{"token":"<TOKEN_DO_LINK>","new_password":"novasenha123"}'
 ```
 
-- **`POST /api/auth/forgot-password`**: gera um token de recuperação com expiração curta (1 hora), guarda **só o hash** do token no banco e loga o link no servidor. A resposta é sempre a mesma (não revela se o e-mail existe).
+- **`POST /api/auth/forgot-password`**: gera um token de recuperação com expiração curta (1 hora), guarda **só o hash** do token no banco e envia o e-mail de verdade via **Resend**. Se o envio falhar (chave ausente/erro na API), apenas logamos no servidor — a resposta continua sempre a mesma (não revela se o e-mail existe).
 - **`POST /api/auth/reset-password`**: valida o token (existe, não expirou, ainda não usado), atualiza o hash da senha e **invalida** o token (uso único). Tokens inválidos, expirados ou já usados respondem **400** com a mesma mensagem genérica.
 
 ### 🗃️ Migrações (Alembic)
@@ -497,8 +496,17 @@ Todas as variáveis estão documentadas no arquivo **`.env.example`** (na raiz e
 | `SECRET_KEY_BASE` | realtime | Chave secreta do Phoenix |
 | `SECRET_KEY` / `ALGORITHM` | api **e** realtime | Chave e algoritmo do JWT. **O `realtime` precisa da mesma `SECRET_KEY` da `api`** para validar o token emitido no login (HS256). Mantenha sempre iguais nos dois serviços. |
 | `CORS_ORIGINS` | api | Origens permitidas para o frontend |
+| `RESEND_API_KEY` | api | Chave de API do Resend (https://resend.com) para o fluxo de **recuperação de senha**. Necessária para o e-mail ser enviado de verdade. |
+| `EMAIL_FROM` | api | Remetente dos e-mails (padrão `onboarding@resend.dev` — **remetente de TESTES**) |
 | `VITE_API_URL` / `VITE_WS_URL` | frontend | URLs dos backends (usadas pelo navegador) |
 | `VITE_API_PROXY_TARGET` / `VITE_SOCKET_PROXY_TARGET` | frontend | Alvos do proxy do Vite (Docker usa os nomes dos serviços `api`/`realtime`) |
+
+> 🔑 **Sobre o Resend:** o fluxo de esqueci minha senha precisa de uma conta gratuita no
+> [Resend](https://resend.com) com a chave de API no `api/.env` (`RESEND_API_KEY`). **Importante:**
+> enquanto não houver um **domínio próprio verificado** no Resend, o remetente padrão
+> (`EMAIL_FROM=onboarding@resend.dev`) é o de **testes** e **só entrega para o e-mail usado no
+> cadastro da conta Resend** — com muitos usuários reais, será preciso verificar um domínio e
+> trocar o `EMAIL_FROM`. A chave real vive **só no `.env`** (nunca no repo).
 
 ---
 

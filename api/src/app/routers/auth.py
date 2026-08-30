@@ -1,6 +1,7 @@
 # routers/auth.py — Autenticação (cadastro, login e recuperação de senha)
 #
 # Endpoints reais usando banco (SQLAlchemy), hash bcrypt e token JWT.
+import logging
 from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -17,6 +18,7 @@ from src.app.schemas.auth import (
     TokenOut,
     UserOut,
 )
+from src.app.services.email import send_password_reset_email
 from src.app.services.security import (
     create_access_token,
     generate_reset_token,
@@ -24,6 +26,8 @@ from src.app.services.security import (
     hash_token,
     verify_password,
 )
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -89,8 +93,9 @@ def forgot_password(data: ForgotPasswordRequest, db: Session = Depends(get_db)):
     e-mail existir ou não cadastrado. Assim não revelamos se um e-mail está
     cadastrado no sistema.
 
-    Ainda não temos serviço de e-mail de verdade: apenas LOGAMOS o link de
-    recuperação no console do servidor, para desenvolvimento.
+    Envia o e-mail de recuperação via Resend em modo "best-effort": falhas de
+    envio são apenas LOGADAS no servidor (também logamos o link em dev, pois o
+    remetente de testes do Resend só entrega para o e-mail da própria conta).
     """
     user = db.query(User).filter(User.email == data.email).first()
 
@@ -106,11 +111,25 @@ def forgot_password(data: ForgotPasswordRequest, db: Session = Depends(get_db)):
         db.add(reset)
         db.commit()
 
-        # TODO: integrar serviço de e-mail real (ex: SendGrid, Resend) antes
-        # de ir pra produção. Por enquanto, apenas logamos o link.
+        # Envia o e-mail de recuperação de verdade (via Resend). O envio é
+        # feito de forma "best-effort": se falhar, apenas LOGAMOS no servidor
+        # e seguimos — a resposta da API continua sendo a mensagem genérica,
+        # sem revelar ao usuário se o e-mail existe ou se o envio funcionou.
         reset_link = f"/reset-password?token={raw_token}"
-        print(f"[RECUPERAÇÃO DE SENHA] E-mail: {user.email}")
-        print(f"[RECUPERAÇÃO DE SENHA] Link de recuperação: {reset_link}")
+        # Log de desenvolvimento: como o remetente de testes do Resend só
+        # entrega para o e-mail cadastrado na conta, deixamos o link visível
+        # no log do servidor para facilitar os testes manuais.
+        logger.info("[RECUPERAÇÃO DE SENHA] Link de recuperação: %s", reset_link)
+        try:
+            send_password_reset_email(user.email, reset_link)
+        except Exception as exc:  # noqa: BLE001 — nunca vazar para a API
+            # Garantia extra: qualquer erro inesperado no envio não quebra o
+            # fluxo nem expõe detalhes técnicos ao usuário final.
+            logger.error(
+                "Erro inesperado ao enviar e-mail de recuperação para %s: %s",
+                user.email,
+                exc,
+            )
 
     # Resposta genérica (não revela se o e-mail existe).
     return {
