@@ -1,0 +1,74 @@
+/* App.css — Estilos globais do aplicativo JCL-Chat */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  /* Variáveis de cor - tema escuro gamer (padrão) */
+  --color-bg-primary: #0d0d0d;
+  --color-bg-secondary: #1a1a1a;
+  --color-bg-tertiary: #2a2a2a;
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #b0b0b0;
+  --color-accent: #a8d8f0;
+  --color-accent-hover: #89c2e8;
+  --color-border: #333333;
+
+  /* Layout em colunas (estilo Discord) — tons de fundo por coluna */
+  --color-rail: #090909;
+  --color-sidebar: #121212;
+  --color-chat-area: #0d0d0d;
+  --color-composer: #1a1a1a;
+
+  /* Tipografia */
+  --font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
+  --font-size-base: 16px;
+  --border-radius: 8px;
+}
+
+body {
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Tema escritório (claro/neutro) - ativado via classe no elemento root */
+body.office-theme {
+  --color-bg-primary: #f5f5f5;
+  --color-bg-secondary: #ffffff;
+  --color-bg-tertiary: #e8e8e8;
+  --color-text-primary: #1a1a1a;
+  --color-text-secondary: #555555;
+  --color-accent: #89c2e8;
+  --color-accent-hover: #5a9bcf;
+  --color-border: #cccccc;
+
+  /* Layout em colunas — tons claros por coluna */
+  --color-rail: #e0e0e0;
+  --color-sidebar: #f0f0f0;
+  --color-chat-area: #f5f5f5;
+  --color-composer: #ffffff;
+}
+
+a {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--color-accent-hover);
+}

@@ -1,0 +1,34 @@
+# Dockerfile.dev — Frontend (React + Vite) em modo DESENVOLVIMENTO
+#
+# Esta imagem é usada APENAS para desenvolvimento local via docker-compose.
+# Ela mantém o Node/npm instalado e roda o Vite em modo dev com hot-reload.
+#
+# Para produção use o Dockerfile (multi-stage + nginx).
+#
+# Porta: o Vite é configurado (vite.config.ts) para rodar na porta 3000,
+# que é a mesma exposta aqui e mapeada no docker-compose.yml.
+
+FROM node:22-alpine
+
+WORKDIR /app
+
+# Copia os manifests primeiro (aproveitamento de cache)
+COPY package.json ./
+COPY package-lock.json ./
+COPY tsconfig*.json ./
+
+# Instala TODAS as dependências (incluindo devDependencies como o Vite)
+RUN npm ci
+
+# Copia o código-fonte e config do Vite
+COPY index.html ./
+COPY vite.config.ts ./
+COPY public ./public
+COPY src ./src
+
+# Porta usada pelo servidor de desenvolvimento do Vite
+EXPOSE 3000
+
+# Roda o Vite em modo dev escutando em todas as interfaces
+# (--host 0.0.0.0) para que o container seja acessível pela máquina host.
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
