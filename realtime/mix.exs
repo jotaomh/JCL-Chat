@@ -40,7 +40,11 @@ defmodule JclChat.MixProject do
       # JSON helpers
       {:jason, "~> 1.4"},
       # JWT (validar tokens emitidos pela API Python — HS256)
-      {:joken, "~> 2.6"}
+      {:joken, "~> 2.6"},
+      # Trava numa versão da jose compatível com Erlang/OTP 25
+      # (versões mais novas exigem OTP 27+, que temos evitado por
+      # causa de um bug de certificado TLS com o hex.pm)
+      {:jose, "~> 1.11.10", override: true}
     ]
   end
 end
