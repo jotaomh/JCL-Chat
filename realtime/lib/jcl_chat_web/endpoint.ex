@@ -5,11 +5,11 @@
 defmodule JclChatWeb.Endpoint do
   use Phoenix.Endpoint, otp_app: :jcl_chat
 
-  # Endereço base do servidor (usado para gerar URLs)
+  # Configure session encryption and storage.
   @session_options [
     store: :cookie,
     key: "_jcl_chat_key",
-    signing_salt: System.get_env("SECRET_KEY_BASE") || "dev_salt"
+    signing_salt: "jcl_chat_session_salt"
   ]
 
   socket "/socket", JclChatWeb.UserSocket,

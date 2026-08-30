@@ -10,8 +10,6 @@
 defmodule JclChatWeb.UserSocket do
   use Phoenix.Socket
 
-  @jwt_config Application.compile_env(:jcl_chat, :jwt)
-
   # Timeout em milissegundos para conexões fechadas sem handshake
   @impl true
   def connect(%{"token" => token} = params, socket, _connect_info) do
@@ -36,7 +34,8 @@ defmodule JclChatWeb.UserSocket do
   # Decodifica e valida o JWT com a mesma chave/algoritmo usados pela API
   # Python (SECRET_KEY / HS256). Os tokens têm claims: sub (user_id) e exp.
   defp verify_token(token) do
-    signer = Joken.Signer.create(@jwt_config[:algorithm], @jwt_config[:secret_key])
+    jwt_config = Application.get_env(:jcl_chat, :jwt)
+    signer = Joken.Signer.create(jwt_config[:algorithm], jwt_config[:secret_key])
     case Joken.verify(token, signer) do
       {:ok, claims} -> %{valid: true, claims: claims}
       {:error, _reason} -> %{valid: false, claims: %{}}
