@@ -52,7 +52,15 @@ def upgrade() -> None:
             sa.ForeignKey("users.id", ondelete="CASCADE"),
             nullable=False,
         ),
-        sa.Column("status", _friend_request_status, nullable=False),
+        sa.Column(
+            "status",
+            sa.Enum(
+                "pending", "accepted", "rejected",
+                name="friend_request_status",
+                create_type=False,  # já criamos o tipo manualmente acima
+            ),
+            nullable=False,
+        ),
         sa.Column(
             "created_at",
             sa.DateTime(timezone=True),
