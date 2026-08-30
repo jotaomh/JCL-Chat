@@ -4,9 +4,9 @@
 # ATENÇÃO: NUNCA armazenamos a senha em texto puro aqui — apenas o
 # "password_hash" gerado com bcrypt (ver services/security.py).
 import uuid
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 
-from sqlalchemy import String, DateTime, func
+from sqlalchemy import String, DateTime, Date, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -36,6 +36,11 @@ class User(Base):
     # Hash da senha gerado com bcrypt (nunca a senha em texto puro)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
 
+    # Data de nascimento (obrigatória). Guardamos a data (não a "idade")
+    # porque a idade fica desatualizada com o tempo — a idade é calculada
+    # na hora, a partir desta data, quando precisamos exibi-la/validá-la.
+    birth_date: Mapped[date] = mapped_column(Date, nullable=False)
+
     # Data/hora de criação (gera o valor no banco ao inserir)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
@@ -50,5 +55,6 @@ class User(Base):
             "id": str(self.id),
             "username": self.username,
             "email": self.email,
+            "birth_date": self.birth_date.isoformat() if self.birth_date else None,
             "created_at": self.created_at.isoformat() if self.created_at else None,
         }

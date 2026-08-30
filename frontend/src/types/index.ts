@@ -8,6 +8,9 @@ export interface User {
   email: string;
   avatar_url?: string;
   status: 'online' | 'offline' | 'away';
+  // Data de nascimento (YYYY-MM-DD). Usamos a data (não a idade) porque a
+  // idade é calculada na hora quando exibimos — fica sempre atualizada.
+  birth_date?: string;
   created_at: string;
 }
 

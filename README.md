@@ -219,15 +219,15 @@ curl http://localhost:8080/
 curl http://localhost:8080/api/health
 ```
 
-### 🔐 Autenticação (cadastro + login)
+### 🔐 Autenticação (cadastro + login + recuperação de senha)
 
-A API já tem autenticação real usando **JWT** e senhas com hash **bcrypt** (nunca salvas em texto puro). Fluxo ponta a ponta:
+A API tem autenticação real usando **JWT** e senhas com hash **bcrypt** (nunca salvas em texto puro). O cadastro coleta a **data de nascimento** (`birth_date`), validada no backend (idade mínima de 13 anos — a idade é calculada a partir da data, então nunca fica desatualizada). Fluxo ponta a ponta:
 
 ```bash
 # 1) Cadastro — retorna os dados do usuário (sem token)
 curl -X POST http://localhost:8000/api/auth/register \
   -H "Content-Type: application/json" \
-  -d '{"username":"fulano","email":"fulano@email.com","password":"minhasenha"}'
+  -d '{"username":"fulano","email":"fulano@email.com","password":"minhasenha","birth_date":"2000-01-15"}'
 
 # 2) Login — retorna o token JWT (validade de 24h)
 curl -X POST http://localhost:8000/api/auth/login \
@@ -239,9 +239,30 @@ curl http://localhost:8000/api/users/me \
   -H "Authorization: Bearer <TOKEN_AQUI>"
 ```
 
-- **`POST /api/auth/register`**: valida se `username`/`email` já existem (erro **409** se repetem), gera o hash bcrypt da senha e salva. NUNCA devolve o hash.
+- **`POST /api/auth/register`**: valida se `username`/`email` já existem (erro **409** se repetem), valida a data de nascimento (rejeita datas no futuro ou que resultem em menos de 13 anos — **422**), gera o hash bcrypt da senha e salva. NUNCA devolve o hash.
 - **`POST /api/auth/login`**: valida as credenciais e devolve o JWT. Em caso de erro retorna **401** com mensagem genérica (não revela se errou o e-mail ou a senha).
 - **`GET /api/users/me`**: protegido por token (requer header `Authorization: Bearer <token>`); devolve os dados do usuário logado.
+
+#### Esqueci minha senha (recuperação)
+
+Fluxo em duas etapas com **e-mail real via Resend** (o link também fica no log do servidor, o que ajuda nos testes locais — ver `api/src/app/routers/auth.py` e `api/src/app/services/email.py`):
+
+```bash
+# 1) Solicita recuperação — responde SEMPRE a mesma mensagem, existindo ou
+#    não o e-mail (não revela se o endereço está cadastrado, por segurança).
+curl -X POST http://localhost:8000/api/auth/forgot-password \
+  -H "Content-Type: application/json" \
+  -d '{"email":"fulano@email.com"}'
+# -> {"message":"Se este e-mail existir, um link de recuperação foi enviado."}
+
+# 2) Redefine a senha com o token recebido por e-mail (uso único, expira em 1h)
+curl -X POST http://localhost:8000/api/auth/reset-password \
+  -H "Content-Type: application/json" \
+  -d '{"token":"<TOKEN_DO_LINK>","new_password":"novasenha123"}'
+```
+
+- **`POST /api/auth/forgot-password`**: gera um token de recuperação com expiração curta (1 hora), guarda **só o hash** do token no banco e envia o e-mail de verdade via **Resend**. Se o envio falhar (chave ausente/erro na API), apenas logamos no servidor — a resposta continua sempre a mesma (não revela se o e-mail existe).
+- **`POST /api/auth/reset-password`**: valida o token (existe, não expirou, ainda não usado), atualiza o hash da senha e **invalida** o token (uso único). Tokens inválidos, expirados ou já usados respondem **400** com a mesma mensagem genérica.
 
 ### 🗃️ Migrações (Alembic)
 
@@ -257,7 +278,8 @@ alembic downgrade base  # desfaz todas
 alembic revision --autogenerate -m "descricao"   # gera nova migração a partir dos modelos
 ```
 
-A migration inicial (`alembic/versions/0001_...`) cria a tabela `users`.
+- A migration inicial (`alembic/versions/0001_...`) cria a tabela `users`.
+- A migration `0002` adiciona a coluna `birth_date` em `users` (obrigatória) e cria a tabela `password_reset_tokens` (tokens de recuperação de senha). **Ao atualizar um banco já existente, rode `alembic upgrade head`** (ou suba a API, que o faz sozinha).
 
 ### Parar/limpar tudo
 
@@ -474,15 +496,24 @@ Todas as variáveis estão documentadas no arquivo **`.env.example`** (na raiz e
 | `SECRET_KEY_BASE` | realtime | Chave secreta do Phoenix |
 | `SECRET_KEY` / `ALGORITHM` | api **e** realtime | Chave e algoritmo do JWT. **O `realtime` precisa da mesma `SECRET_KEY` da `api`** para validar o token emitido no login (HS256). Mantenha sempre iguais nos dois serviços. |
 | `CORS_ORIGINS` | api | Origens permitidas para o frontend |
+| `RESEND_API_KEY` | api | Chave de API do Resend (https://resend.com) para o fluxo de **recuperação de senha**. Necessária para o e-mail ser enviado de verdade. |
+| `EMAIL_FROM` | api | Remetente dos e-mails (padrão `onboarding@resend.dev` — **remetente de TESTES**) |
 | `VITE_API_URL` / `VITE_WS_URL` | frontend | URLs dos backends (usadas pelo navegador) |
 | `VITE_API_PROXY_TARGET` / `VITE_SOCKET_PROXY_TARGET` | frontend | Alvos do proxy do Vite (Docker usa os nomes dos serviços `api`/`realtime`) |
+
+> 🔑 **Sobre o Resend:** o fluxo de esqueci minha senha precisa de uma conta gratuita no
+> [Resend](https://resend.com) com a chave de API no `api/.env` (`RESEND_API_KEY`). **Importante:**
+> enquanto não houver um **domínio próprio verificado** no Resend, o remetente padrão
+> (`EMAIL_FROM=onboarding@resend.dev`) é o de **testes** e **só entrega para o e-mail usado no
+> cadastro da conta Resend** — com muitos usuários reais, será preciso verificar um domínio e
+> trocar o `EMAIL_FROM`. A chave real vive **só no `.env`** (nunca no repo).
 
 ---
 
 ## 🗺️ Roadmap (próximas etapas)
 
 - [x] **Etapa 1**: Estrutura do projeto + "hello world" em cada serviço + Docker Compose
-- [x] **Etapa 2 (parcial)**: Banco de dados + autenticação real (JWT) + cadastro/login + endpoint `/me`
+- [x] **Etapa 2**: Banco de dados + autenticação real (JWT) + cadastro/login + endpoint `/me` — agora com **data de nascimento** validada (idade mín. 13), **telas de auth** em cartão centralizado (login, cadastro, esqueci minha senha, redefinir senha) e fluxo **esqueci minha senha** funcional (token com expiração curta + uso único; link logado no servidor, e-mail real fica como TODO)
 - [ ] **Etapa 3**: Sistema de amizades + grupos/comunidades
 - [ ] **Etapa 4**: Chat de texto em tempo real (Phoenix Channels) — socket autenticado com JWT e sala `lobby` funcionando; faltam grupos/canais múltiplos
 - [ ] **Etapa 5**: Chamadas de voz/vídeo (WebRTC)

@@ -1,19 +1,39 @@
 /* styles/components.css — Estilos de componentes reutilizáveis */
 
 /* Login / Auth */
-.login-page {
+
+/* Tela cheia com a cor de fundo do tema atual (gamer escuro ou escritório
+   claro). Centraliza o cartão no meio da tela. */
+.auth-screen {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  padding: 2rem;
+  padding: 3rem 2rem;
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  overflow: hidden;
+}
+
+/* Espaço reservado para as ilustrações decorativas do fundo (gamer /
+   escritório). Por enquanto é um placeholder DISCRETO e vazio (nada visível),
+   apenas a estrutura pronta. Quando as ilustrações entrarem, adicionamos as
+   imagens/SVG aqui dentro e as estilizamos com esta classe (position absolute
+   nas laterais, pointer-events none para não bloquear o clique). */
+.background-illustrations {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  /* vazio de propósito — pronto para receber as ilustrações futuras */
 }
 
 .theme-toggle {
   position: fixed;
   top: 1rem;
   right: 1rem;
+  z-index: 10;
   padding: 0.5rem 1rem;
   border: 1px solid var(--color-border);
   border-radius: var(--border-radius);
@@ -27,19 +47,36 @@
   background: var(--color-bg-tertiary);
 }
 
-.auth-form {
-  background: var(--color-bg-secondary);
-  padding: 2rem;
-  border-radius: var(--border-radius);
-  border: 1px solid var(--color-border);
+/* Cartão centralizado, comum a login/cadastro/recuperação de senha */
+.auth-card {
+  position: relative;
+  z-index: 1;
   width: 100%;
-  max-width: 400px;
+  max-width: 440px;
+  padding: 2.25rem 2rem;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
 }
 
-.auth-form h1 {
+.auth-card-title {
   text-align: center;
-  color: var(--color-accent);
-  margin-bottom: 0.5rem;
+  color: var(--color-text-primary);
+  margin-bottom: 0.25rem;
+  font-size: 1.5rem;
+}
+
+.auth-card-subtitle {
+  text-align: center;
+  color: var(--color-text-secondary);
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+}
+
+/* O formulário em si (dentro do cartão) — sem fundo próprio */
+.auth-form {
+  width: 100%;
 }
 
 .form-group {
@@ -68,6 +105,21 @@
   border-color: var(--color-accent);
 }
 
+/* Ajuda / erro embaixo de campos específicos */
+.field-hint {
+  display: block;
+  margin-top: 0.3rem;
+  color: var(--color-text-secondary);
+  font-size: 0.8rem;
+}
+
+.field-error {
+  display: block;
+  margin-top: 0.3rem;
+  color: #e74c3c;
+  font-size: 0.85rem;
+}
+
 .btn-primary {
   width: 100%;
   padding: 0.75rem;
@@ -77,25 +129,16 @@
   border-radius: var(--border-radius);
   font-size: 1rem;
   cursor: pointer;
-  margin-bottom: 0.5rem;
+  margin-top: 0.5rem;
 }
 
 .btn-primary:hover {
   background: var(--color-accent-hover);
 }
 
-.btn-secondary {
-  width: 100%;
-  padding: 0.5rem;
-  background: transparent;
-  color: var(--color-text-secondary);
-  border: none;
-  cursor: pointer;
-  font-size: 0.9rem;
-}
-
-.btn-secondary:hover {
-  color: var(--color-text-primary);
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .error-message {
@@ -106,6 +149,46 @@
   margin-bottom: 1rem;
   font-size: 0.9rem;
   text-align: center;
+}
+
+/* Mensagem de sucesso (ex.: link enviado, senha redefinida) */
+.auth-success-message {
+  background: color-mix(in srgb, var(--color-accent) 15%, transparent);
+  color: var(--color-accent);
+  padding: 1rem;
+  border-radius: var(--border-radius);
+  font-size: 0.95rem;
+  text-align: center;
+}
+
+/* Rodapé do cartão: links para trocar de tela */
+.auth-card-footer {
+  margin-top: 1.25rem;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.auth-link {
+  display: inline-block;
+  color: var(--color-accent);
+  margin-bottom: 0.5rem;
+}
+
+.auth-link:hover {
+  color: var(--color-accent-hover);
+}
+
+.auth-switch {
+  color: var(--color-text-secondary);
+}
+
+.auth-switch a {
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+.auth-switch a:hover {
+  color: var(--color-accent-hover);
 }
 
 /* App Header */
