@@ -14,11 +14,24 @@ export interface User {
   created_at: string;
 }
 
-// Amizade
-export interface Friendship {
+// Amizade (pedido aceito) — um amigo de verdade
+export interface Friend {
   id: string;
-  friend_id: string;
+  username: string;
+}
+
+// Indicador visual de status (real via Presence ficará para depois)
+export type FriendStatus = 'online' | 'offline';
+
+// Pedido de amizade (recebido ou enviado)
+export interface FriendRequest {
+  id: string;
+  requester_id: string;
+  addressee_id: string;
   status: 'pending' | 'accepted' | 'rejected';
+  // username da contraparte (quem enviou, p/ pedidos recebidos; quem
+  // recebeu, p/ pedidos enviados)
+  username?: string;
   created_at: string;
 }
 
@@ -65,7 +78,7 @@ export interface Call {
 // Estados da aplicação (para quando usarmos um gerenciador de estado)
 export interface AppState {
   currentUser: User | null;
-  friends: Friendship[];
+  friends: Friend[];
   groups: Group[];
   currentChannel: Channel | null;
   messages: Message[];

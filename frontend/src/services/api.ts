@@ -125,17 +125,52 @@ export async function getUserById(id: string) {
 
 // === Amizades ===
 
-// Envia solicitação de amizade
-export async function sendFriendRequest(friendId: string) {
-  return apiRequest<{ friendship: import('../types').Friendship }>('/friends/request', {
+// Envia solicitação de amizade buscando pelo username exato (ex.: "@joao")
+export async function sendFriendRequest(username: string) {
+  return apiRequest<{ message: string }>('/friends/request', {
     method: 'POST',
-    body: JSON.stringify({ friend_id: friendId }),
+    body: JSON.stringify({ username }),
   });
 }
 
-// Lista amizades do usuário logado
-export async function getFriendships() {
-  return apiRequest<import('../types').Friendship[]>('/friends');
+// Lista os amigos de verdade (pedidos aceitos)
+export async function getFriends() {
+  return apiRequest<{ friends: import('../types').Friend[] }>('/friends');
+}
+
+// Lista pedidos pendentes RECEBIDOS pelo usuário logado
+export async function getIncomingFriendRequests() {
+  return apiRequest<{ requests: import('../types').FriendRequest[] }>(
+    '/friends/requests'
+  );
+}
+
+// Lista pedidos pendentes ENVIADOS pelo usuário logado ("aguardando resposta")
+export async function getSentFriendRequests() {
+  return apiRequest<{ requests: import('../types').FriendRequest[] }>(
+    '/friends/requests/sent'
+  );
+}
+
+// Aceita um pedido recebido
+export async function acceptFriendRequest(requestId: string) {
+  return apiRequest<{ message: string }>(`/friends/requests/${requestId}/accept`, {
+    method: 'POST',
+  });
+}
+
+// Recusa um pedido recebido
+export async function rejectFriendRequest(requestId: string) {
+  return apiRequest<{ message: string }>(`/friends/requests/${requestId}/reject`, {
+    method: 'POST',
+  });
+}
+
+// Remove uma amizade pelo id do amigo
+export async function removeFriend(friendId: string) {
+  return apiRequest<{ message: string }>(`/friends/${friendId}`, {
+    method: 'DELETE',
+  });
 }
 
 // === Grupos ===

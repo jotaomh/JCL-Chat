@@ -470,6 +470,146 @@
   font-size: 0.8rem;
 }
 
+/* ---- Sistema de amizades (sidebar "Amigos") ---- */
+
+/* Feedback (sucesso/erro) vindo da API */
+.friends-feedback {
+  margin: 0.5rem 0.75rem;
+  padding: 0.5rem 0.6rem;
+  border-radius: var(--border-radius);
+  font-size: 0.85rem;
+}
+
+.friends-feedback-ok {
+  background: rgba(46, 204, 113, 0.15);
+  color: #2ecc71;
+}
+
+.friends-feedback-err {
+  background: rgba(231, 76, 60, 0.15);
+  color: #e74c3c;
+}
+
+/* Formulário "Adicionar amigo" */
+.add-friend-form {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.add-friend-input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  font-size: 0.85rem;
+}
+
+.add-friend-input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+.add-friend-btn {
+  padding: 0.45rem 0.75rem;
+  border: none;
+  border-radius: var(--border-radius);
+  background: var(--color-accent);
+  color: white;
+  font-size: 0.85rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.add-friend-btn:hover {
+  background: var(--color-accent-hover);
+}
+
+.add-friend-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Linha de amigo / pedido */
+.friend-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.5rem;
+  border-radius: var(--border-radius);
+  color: var(--color-text-primary);
+  font-size: 0.9rem;
+}
+
+.friend-row:hover {
+  background: var(--color-bg-tertiary);
+}
+
+/* Indicador visual simples de status (online real fica p/ Presence).
+   Por ora todas offline (cinza). */
+.friend-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #7f8c8d;
+  flex: 0 0 auto;
+}
+
+.friend-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.friend-actions {
+  display: flex;
+  gap: 0.3rem;
+  flex: 0 0 auto;
+}
+
+.friend-action {
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 0.85rem;
+  line-height: 1;
+  color: white;
+}
+
+.friend-action.accept {
+  background: #2ecc71;
+}
+
+.friend-action.reject {
+  background: #e74c3c;
+}
+
+.friend-remove {
+  display: none;
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  font-size: 0.85rem;
+  line-height: 1;
+  flex: 0 0 auto;
+}
+
+.friend-row:hover .friend-remove {
+  display: block;
+}
+
+.friend-remove:hover {
+  color: #e74c3c;
+}
+
 .sidebar-empty {
   padding: 1rem 0.75rem;
   color: var(--color-text-secondary);

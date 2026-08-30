@@ -280,6 +280,7 @@ alembic revision --autogenerate -m "descricao"   # gera nova migração a partir
 
 - A migration inicial (`alembic/versions/0001_...`) cria a tabela `users`.
 - A migration `0002` adiciona a coluna `birth_date` em `users` (obrigatória) e cria a tabela `password_reset_tokens` (tokens de recuperação de senha). **Ao atualizar um banco já existente, rode `alembic upgrade head`** (ou suba a API, que o faz sozinha).
+- A migration `0003` cria a tabela `friend_requests` (sistema de amizades) com uma constraint de unicidade em `(requester_id, addressee_id)`. **Ao atualizar um banco já existente, rode `alembic upgrade head`** (ou suba a API, que o faz sozinha).
 
 ### Parar/limpar tudo
 
