@@ -26,9 +26,12 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
-  /* vazio de propósito — pronto para receber as ilustrações futuras */
+  background-image: url('../assets/images/auth-background.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0.6;
 }
-
 .theme-toggle {
   position: fixed;
   top: 1rem;
