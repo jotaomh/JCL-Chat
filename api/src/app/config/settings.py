@@ -34,6 +34,9 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
+        # Ignora variáveis de ambiente que não correspondem a campos do
+        # Settings (ex.: API_PORT, que o .env define mas não usamos aqui).
+        extra = "ignore"
 
 
 # Instância única compartilhada por toda a aplicação
