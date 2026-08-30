@@ -19,7 +19,8 @@ const SERVERS: ServerItem[] = [
 
 export function ChannelsPage() {
   const { logout, user } = useAuth();
-  const { toggleTheme } = useTheme();  const { messages, sendMessage, connected } = useChat();
+  const { toggleTheme } = useTheme();
+  const { messages, sendMessage, connected } = useChat();
 
   const [selection, setSelection] = useState<AppSelection>({
     type: 'channel',

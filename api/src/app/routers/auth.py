@@ -1,13 +1,29 @@
-# routers/auth.py — Autenticação (cadastro e login)
+# routers/auth.py — Autenticação (cadastro, login e recuperação de senha)
 #
 # Endpoints reais usando banco (SQLAlchemy), hash bcrypt e token JWT.
+from datetime import datetime, timedelta, timezone
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from src.app.db import get_db
 from src.app.models.user import User
-from src.app.schemas.auth import LoginRequest, RegisterRequest, TokenOut, UserOut
-from src.app.services.security import create_access_token, hash_password, verify_password
+from src.app.models.password_reset_token import PasswordResetToken
+from src.app.schemas.auth import (
+    ForgotPasswordRequest,
+    LoginRequest,
+    RegisterRequest,
+    ResetPasswordRequest,
+    TokenOut,
+    UserOut,
+)
+from src.app.services.security import (
+    create_access_token,
+    generate_reset_token,
+    hash_password,
+    hash_token,
+    verify_password,
+)
 
 router = APIRouter()
 
@@ -29,11 +45,13 @@ def register(data: RegisterRequest, db: Session = Depends(get_db)):
             detail="Nome de usuário já em uso",
         )
 
-    # Cria o usuário com o hash da senha (nunca a senha em texto puro)
+    # Cria o usuário com o hash da senha (nunca a senha em texto puro).
+    # A data de nascimento já vem validada pelo schema (idade mínima 13 anos).
     user = User(
         username=data.username,
         email=data.email,
         password_hash=hash_password(data.password),
+        birth_date=data.birth_date,
     )
     db.add(user)
     db.commit()
@@ -61,3 +79,75 @@ def login(data: LoginRequest, db: Session = Depends(get_db)):
 
     token = create_access_token(str(user.id))
     return TokenOut(access_token=token, user=user.as_dict)
+
+
+@router.post("/forgot-password", status_code=status.HTTP_200_OK)
+def forgot_password(data: ForgotPasswordRequest, db: Session = Depends(get_db)):
+    """Inicia a recuperação de senha gerando um token de expiração curta.
+
+    IMPORTANTE (segurança): a resposta é SEMPRE a mesma, independente de o
+    e-mail existir ou não cadastrado. Assim não revelamos se um e-mail está
+    cadastrado no sistema.
+
+    Ainda não temos serviço de e-mail de verdade: apenas LOGAMOS o link de
+    recuperação no console do servidor, para desenvolvimento.
+    """
+    user = db.query(User).filter(User.email == data.email).first()
+
+    if user is not None:
+        # Gera o token (valor em texto puro, para ir no link) e guarda só o
+        # HASH dele no banco. Expira em 1 hora.
+        raw_token = generate_reset_token()
+        reset = PasswordResetToken(
+            user_id=user.id,
+            token_hash=hash_token(raw_token),
+            expires_at=datetime.now(timezone.utc) + timedelta(hours=1),
+        )
+        db.add(reset)
+        db.commit()
+
+        # TODO: integrar serviço de e-mail real (ex: SendGrid, Resend) antes
+        # de ir pra produção. Por enquanto, apenas logamos o link.
+        reset_link = f"/reset-password?token={raw_token}"
+        print(f"[RECUPERAÇÃO DE SENHA] E-mail: {user.email}")
+        print(f"[RECUPERAÇÃO DE SENHA] Link de recuperação: {reset_link}")
+
+    # Resposta genérica (não revela se o e-mail existe).
+    return {
+        "message": "Se este e-mail existir, um link de recuperação foi enviado."
+    }
+
+
+@router.post("/reset-password", status_code=status.HTTP_200_OK)
+def reset_password(data: ResetPasswordRequest, db: Session = Depends(get_db)):
+    """Redefine a senha usando um token válido de recuperação.
+
+    Valida que o token existe, não expirou e ainda não foi usado. Em seguida
+    atualiza o hash da senha e invalida (marca como usado) o token.
+    """
+    reset = (
+        db.query(PasswordResetToken)
+        .filter(PasswordResetToken.token_hash == hash_token(data.token))
+        .first()
+    )
+
+    # Token inválido, expirado ou já usado: mesma mensagem genérica.
+    if reset is None or reset.is_used or reset.is_expired:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Link inválido ou expirado. Solicite um novo link de recuperação.",
+        )
+
+    user = db.query(User).filter(User.id == reset.user_id).first()
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Link inválido ou expirado. Solicite um novo link de recuperação.",
+        )
+
+    # Atualiza a senha e invalida o token (uso único).
+    user.password_hash = hash_password(data.new_password)
+    reset.used_at = datetime.now(timezone.utc)
+    db.commit()
+
+    return {"message": "Senha redefinida com sucesso."}

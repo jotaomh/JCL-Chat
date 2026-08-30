@@ -36,6 +36,29 @@ def verify_password(plain_password: str, password_hash: str) -> bool:
     return pwd_context.verify(plain_password, password_hash)
 
 
+def generate_reset_token() -> str:
+    """Gera um token aleatório seguro para recuperação de senha.
+
+    Usamos secrets.token_urlsafe para gerar um valor imprevisível.
+    O valor em texto puro é retornado para ser enviado por e-mail/link;
+    apenas o HASH dele é guardado no banco (ver hash_token).
+    """
+    import secrets
+
+    return secrets.token_urlsafe(32)
+
+
+def hash_token(token: str) -> str:
+    """Gera o hash de um token (para armazenar no banco em vez do valor puro).
+
+    Guardar só o hash evita que, se o banco vazar, alguém consiga usar os
+    tokens para resetar senhas sem possuir o valor original enviado por e-mail.
+    """
+    import hashlib
+
+    return hashlib.sha256(token.encode("utf-8")).hexdigest()
+
+
 def create_access_token(user_id: str, expires_delta: timedelta | None = None) -> str:
     """Cria um token JWT assinado, com expiração (padrão: 24h).
 

@@ -38,8 +38,22 @@ async function apiRequest<T>(path: string, options: RequestInit = {}): Promise<T
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ detail: 'Erro desconhecido' }));
-    throw new Error(error.detail || `HTTP ${response.status}`);
+    const body = await response.json().catch(() => null);
+    let message = `HTTP ${response.status}`;
+    if (body?.detail) {
+      if (typeof body.detail === 'string') {
+        message = body.detail;
+      } else if (Array.isArray(body.detail)) {
+        // Erros de validação do FastAPI vêm como array de { msg, loc, ... }.
+        // Ex.: cadastro com data de nascimento inválida. Junta as mensagens
+        // para mostrar algo legível ao usuário (em vez de "[object Object]").
+        const msgs = body.detail
+          .map((d: { msg?: unknown }) => d.msg)
+          .filter((m: unknown): m is string => typeof m === 'string');
+        if (msgs.length > 0) message = msgs.join('; ');
+      }
+    }
+    throw new Error(message);
   }
 
   return response.json();
@@ -50,10 +64,16 @@ async function apiRequest<T>(path: string, options: RequestInit = {}): Promise<T
 // Cadastra um novo usuário.
 // O backend devolve apenas os dados do usuário (NÃO um token) — para
 // entrar automaticamente, o frontend chama login() logo em seguida.
-export async function register(username: string, email: string, password: string) {
+// "birth_date" é a data de nascimento (o backend valida a idade mínima).
+export async function register(
+  username: string,
+  email: string,
+  password: string,
+  birthDate: string
+) {
   return apiRequest<import('../types').User>('/auth/register', {
     method: 'POST',
-    body: JSON.stringify({ username, email, password }),
+    body: JSON.stringify({ username, email, password, birth_date: birthDate }),
   });
 }
 
@@ -62,6 +82,26 @@ export async function login(email: string, password: string) {
   return apiRequest<{ user: import('../types').User; token: string }>('/auth/login', {
     method: 'POST',
     body: JSON.stringify({ email, password }),
+  });
+}
+
+// === Recuperação de senha ===
+
+// Inicia a recuperação de senha. O backend sempre responde a mesma mensagem
+// (não revela se o e-mail está cadastrado) e, nesta fase, apenas loga o link
+// de recuperação no console do servidor.
+export async function forgotPassword(email: string) {
+  return apiRequest<{ message: string }>('/auth/forgot-password', {
+    method: 'POST',
+    body: JSON.stringify({ email }),
+  });
+}
+
+// Redefine a senha usando o token recebido por e-mail/link.
+export async function resetPassword(token: string, newPassword: string) {
+  return apiRequest<{ message: string }>('/auth/reset-password', {
+    method: 'POST',
+    body: JSON.stringify({ token, new_password: newPassword }),
   });
 }
 
