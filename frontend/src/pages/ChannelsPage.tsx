@@ -1,42 +1,62 @@
 // pages/ChannelsPage.tsx — Página principal de canais e grupos
 //
-// Onde o usuário vê seus grupos, canais de texto/voz
-// e pode iniciar chamadas.
-//
-// use: página principal após o login
+// Usa o AppLayout estilo Discord: trilho de ícones + lista lateral +
+// área de chat. Nesta fase há só a sala "lobby" fixa (grupos de verdade
+// virão na próxima etapa), mas a estrutura já está pronta pra crescer.
 
+import { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { Link } from 'react-router-dom';
+import { useTheme } from '../hooks/useTheme';
+import { useChat } from '../hooks/useChat';
+import { AppLayout } from '../components/layout/AppLayout';
+import { ChatArea } from '../components/layout/ChatArea';
+import { AppSelection, ServerItem } from '../types';
+
+// Grupo/comunidade único por enquanto: "lobby"
+const SERVERS: ServerItem[] = [
+  { id: 'lobby', name: 'lobby', channels: [{ id: 'lobby', name: 'lobby' }] },
+];
 
 export function ChannelsPage() {
   const { logout, user } = useAuth();
+  const { toggleTheme } = useTheme();  const { messages, sendMessage, connected } = useChat();
+
+  const [selection, setSelection] = useState<AppSelection>({
+    type: 'channel',
+    serverId: 'lobby',
+    channelId: 'lobby',
+  });
+
+  const isFriends = selection.type === 'friends';
+  const roomName =
+    selection.type === 'channel' ? selection.channelId : 'amigos';
 
   return (
-    <div className="channels-page">
-      <header className="app-header">
-        <h1>JCL-Chat</h1>
-        <div className="header-actions">
-          {user && <span className="header-user">👤 {user.username}</span>}
-          <button onClick={logout}>Sair</button>
-        </div>
-      </header>
-
-      <main className="channels-main">
-        <aside className="sidebar">
-          {/* Lista de amigos, grupos, etc. */}
-          <h2>Seus Grupos</h2>
-          <p>Lista de grupos e amigos aparecerá aqui</p>
-        </aside>
-
-        <section className="channels-content">
-          {/* Conteúdo do canal selecionado */}
-          <h2>Bem-vindo ao JCL-Chat!</h2>
-          <p>Selecione um canal para começar a conversar.</p>
-          <nav>
-            <Link to="/call">📹 Iniciar Chamada</Link>
-          </nav>
+    <AppLayout
+      servers={SERVERS}
+      selection={selection}
+      onSelect={setSelection}
+      userLabel={user?.username}
+      onLogout={logout}
+      onToggleTheme={toggleTheme}
+    >
+      {isFriends ? (
+        <section className="chat-area">
+          <header className="chat-header">
+            <h2 className="chat-header-title">Amigos</h2>
+          </header>
+          <div className="chat-messages">
+            <p className="chat-empty">Suas mensagens diretas aparecerão aqui.</p>
+          </div>
         </section>
-      </main>
-    </div>
+      ) : (
+        <ChatArea
+          roomName={roomName}
+          connected={connected}
+          messages={messages}
+          onSend={sendMessage}
+        />
+      )}
+    </AppLayout>
   );
 }

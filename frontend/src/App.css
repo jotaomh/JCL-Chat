@@ -19,6 +19,12 @@
   --color-accent-hover: #89c2e8;
   --color-border: #333333;
 
+  /* Layout em colunas (estilo Discord) — tons de fundo por coluna */
+  --color-rail: #090909;
+  --color-sidebar: #121212;
+  --color-chat-area: #0d0d0d;
+  --color-composer: #1a1a1a;
+
   /* Tipografia */
   --font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
   --font-size-base: 16px;
@@ -50,6 +56,12 @@ body.office-theme {
   --color-accent: #89c2e8;
   --color-accent-hover: #5a9bcf;
   --color-border: #cccccc;
+
+  /* Layout em colunas — tons claros por coluna */
+  --color-rail: #e0e0e0;
+  --color-sidebar: #f0f0f0;
+  --color-chat-area: #f5f5f5;
+  --color-composer: #ffffff;
 }
 
 a {

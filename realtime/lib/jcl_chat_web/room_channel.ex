@@ -43,8 +43,16 @@ defmodule JclChatWeb.RoomChannel do
   # Recebe uma mensagem de texto do cliente
   @impl true
   def handle_in("new_message", %{"body" => body}, socket) do
-    # Broadcast para todos na sala
-    broadcast!(socket, "new_message", %{body: body})
+    user_id = socket.assigns[:user_id]
+    username = socket.assigns[:username]
+
+    # Broadcast para todos na sala, identificando o autor
+    broadcast!(socket, "new_message", %{
+      body: body,
+      user_id: user_id,
+      username: username,
+      timestamp: DateTime.utc_now() |> DateTime.to_iso8601()
+    })
     {:reply, {:ok, %{received: true}}, socket}
   end
 

@@ -67,3 +67,29 @@ export interface AppState {
   currentChannel: Channel | null;
   messages: Message[];
 }
+
+// Mensagem de tempo real (via Phoenix channels)
+export interface ChatMessage {
+  user_id: string;
+  username: string;
+  body: string;
+  timestamp: string;
+}
+
+// Canal de texto dentro de um grupo (fase inicial: sempre "lobby")
+export interface ServerChannel {
+  id: string;
+  name: string;
+}
+
+// Grupo/comunidade exibido no trilho de ícones (fase inicial: "lobby")
+export interface ServerItem {
+  id: string;
+  name: string;
+  channels: ServerChannel[];
+}
+
+// Seleção atual no layout: "Amigos"/DMs ou um canal específico de um grupo
+export type AppSelection =
+  | { type: 'friends' }
+  | { type: 'channel'; serverId: string; channelId: string };

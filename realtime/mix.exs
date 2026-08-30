@@ -38,7 +38,9 @@ defmodule JclChat.MixProject do
       # Server HTTP
       {:plug_cowboy, "~> 2.0"},
       # JSON helpers
-      {:jason, "~> 1.4"}
+      {:jason, "~> 1.4"},
+      # JWT (validar tokens emitidos pela API Python — HS256)
+      {:joken, "~> 2.6"}
     ]
   end
 end

@@ -460,7 +460,7 @@ Todas as variáveis estão documentadas no arquivo **`.env.example`** (na raiz e
 |----------|---------|-----------|
 | `POSTGRES_DB` / `POSTGRES_USER` / `POSTGRES_PASSWORD` | db | Credenciais do banco |
 | `SECRET_KEY_BASE` | realtime | Chave secreta do Phoenix |
-| `SECRET_KEY` / `ALGORITHM` | api | Chave e algoritmo do JWT |
+| `SECRET_KEY` / `ALGORITHM` | api **e** realtime | Chave e algoritmo do JWT. **O `realtime` precisa da mesma `SECRET_KEY` da `api`** para validar o token emitido no login (HS256). Mantenha sempre iguais nos dois serviços. |
 | `CORS_ORIGINS` | api | Origens permitidas para o frontend |
 | `VITE_API_URL` / `VITE_WS_URL` | frontend | URLs dos backends (usadas pelo navegador) |
 | `VITE_API_PROXY_TARGET` / `VITE_SOCKET_PROXY_TARGET` | frontend | Alvos do proxy do Vite (Docker usa os nomes dos serviços `api`/`realtime`) |
@@ -472,7 +472,7 @@ Todas as variáveis estão documentadas no arquivo **`.env.example`** (na raiz e
 - [x] **Etapa 1**: Estrutura do projeto + "hello world" em cada serviço + Docker Compose
 - [x] **Etapa 2 (parcial)**: Banco de dados + autenticação real (JWT) + cadastro/login + endpoint `/me`
 - [ ] **Etapa 3**: Sistema de amizades + grupos/comunidades
-- [ ] **Etapa 4**: Chat de texto em tempo real (Phoenix Channels)
+- [ ] **Etapa 4**: Chat de texto em tempo real (Phoenix Channels) — socket autenticado com JWT e sala `lobby` funcionando; faltam grupos/canais múltiplos
 - [ ] **Etapa 5**: Chamadas de voz/vídeo (WebRTC)
 - [ ] **Etapa 6**: Compartilhamento de tela
 - [ ] **Etapa 7**: Temas gamer/escritório funcionais nas configurações (destaque já trocado para azul bebê)
