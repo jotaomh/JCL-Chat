@@ -9,7 +9,7 @@ from typing import Sequence, Union
 
 from alembic import op
 import sqlalchemy as sa
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import ENUM as PgEnum, UUID
 
 # revision identifiers, used by Alembic.
 revision: str = "0003"
@@ -18,17 +18,24 @@ branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
 
-# Estados possíveis de um pedido de amizade (mesmos valores do modelo)
-_friend_request_status = sa.Enum(
+# Estados possíveis de um pedido de amizade (mesmos valores do modelo).
+# Usamos postgresql.ENUM (não sa.Enum): o tipo nativo não passa pela
+# adaptação do dialect_impl, então o create_type=False é respeitado no
+# op.create_table (com sa.Enum o SQLAlchemy 2.0.36 perde essa flag no
+# clone e tenta recriar o tipo, falhando com "already exists").
+_friend_request_status = PgEnum(
     "pending",
     "accepted",
     "rejected",
     name="friend_request_status",
+    create_type=False,
 )
 
 
 def upgrade() -> None:
     """Cria a tabela friend_requests."""
+    # Criação idempotente: se o tipo já existir (ex.: migração interrompida),
+    # checkfirst=True apenas ignora.
     _friend_request_status.create(op.get_bind(), checkfirst=True)
 
     op.create_table(
@@ -54,7 +61,7 @@ def upgrade() -> None:
         ),
         sa.Column(
             "status",
-            sa.Enum(
+            PgEnum(
                 "pending", "accepted", "rejected",
                 name="friend_request_status",
                 create_type=False,  # já criamos o tipo manualmente acima
