@@ -107,6 +107,8 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-jcl}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-jcl_dev_password}
       CORS_ORIGINS: ${CORS_ORIGINS:-["http://localhost:3000"]}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      EMAIL_FROM: ${EMAIL_FROM:-onboarding@resend.dev}
     volumes:
       # Monta o código-fonte para recarregar em dev
       - ./api/src:/app/src
