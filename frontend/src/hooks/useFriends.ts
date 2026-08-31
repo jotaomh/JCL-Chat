@@ -19,6 +19,9 @@ import {
   sendFriendRequest,
   acceptFriendRequest,
   rejectFriendRequest,
+  // Renomeado para "removeFriendApi": o hook abaixo define uma função com o
+  // MESMO nome (removeFriend). Sem esse alias, o `removeFriend(id)` dentro do
+  // hook chamaria a si mesmo em loop infinito em vez da função da API.
   removeFriend as removeFriendApi,
 } from '../services/api';
 

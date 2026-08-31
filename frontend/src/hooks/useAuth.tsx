@@ -25,13 +25,11 @@ interface AuthState {
   user: User | null;
   token: string | null;
   loading: boolean;
-  error: string | null;
 }
 
 interface AuthContextValue extends AuthState {
   login: (user: User, token: string) => void;
   logout: () => void;
-  setError: (error: string) => void;
   isAuthenticated: boolean;
 }
 
@@ -43,7 +41,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     user: null,
     token: null,
     loading: true,
-    error: null,
   });
 
   // Na inicialização, verifica se há um token salvo no localStorage.
@@ -56,23 +53,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           user: JSON.parse(storedUser),
           token,
           loading: false,
-          error: null,
         });
       } catch {
         // se o JSON salvo estiver corrompido, desloga
         localStorage.removeItem('token');
         localStorage.removeItem('user');
-        setState({ user: null, token: null, loading: false, error: null });
+        setState({ user: null, token: null, loading: false });
       }
     } else {
-      setState({ user: null, token: null, loading: false, error: null });
+      setState({ user: null, token: null, loading: false });
     }
   }, []);
 
   const login = useCallback((user: User, token: string) => {
     localStorage.setItem('token', token);
     localStorage.setItem('user', JSON.stringify(user));
-    setState({ user, token, loading: false, error: null });
+    setState({ user, token, loading: false });
   }, []);
 
   const logout = useCallback(() => {
@@ -84,7 +80,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // redireciona para a tela de login.
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    setState({ user: null, token: null, loading: false, error: null });
+    setState({ user: null, token: null, loading: false });
     // OBSERVAÇÃO (comportamento esperado, NÃO é bug): como o JWT é
     // stateless, o logout no backend não invalida o token em si — ele
     // simplesmente continua válido até expirar sozinho (por padrão 24h).
@@ -93,15 +89,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // cliente, o que já desloga o usuário desta sessão e desconecta o socket.
   }, []);
 
-  const setError = useCallback((error: string) => {
-    setState((prev) => ({ ...prev, error }));
-  }, []);
-
   const value: AuthContextValue = {
     ...state,
     login,
     logout,
-    setError,
     isAuthenticated: state.token !== null,
   };
 

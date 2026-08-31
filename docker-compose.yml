@@ -76,6 +76,8 @@ services:
       SECRET_KEY_BASE: ${SECRET_KEY_BASE:-dev_secret_key_change_me}
       # Chave para validar o JWT da API — deve ser a mesma SECRET_KEY da API
       SECRET_KEY: ${SECRET_KEY:-dev_secret_change_me}
+      # Algoritmo do JWT (lido pelo runtime.exs) — igual ao da API
+      ALGORITHM: ${ALGORITHM:-HS256}
       POSTGRES_HOST: db
       POSTGRES_PORT: "5432"
       POSTGRES_DB: ${POSTGRES_DB:-jcl_chat}
@@ -101,6 +103,9 @@ services:
       - "8000:8000"
     environment:
       SECRET_KEY: ${SECRET_KEY:-dev_secret_change_me}
+      # Algoritmo usado pelo JWT (lido em config/settings.py) — deve ser o
+      # mesmo do realtime (Algoritmo HS256 por padrão).
+      ALGORITHM: ${ALGORITHM:-HS256}
       POSTGRES_HOST: db
       POSTGRES_PORT: "5432"
       POSTGRES_DB: ${POSTGRES_DB:-jcl_chat}

@@ -20,7 +20,15 @@ function App() {
   const { isAuthenticated } = useAuth();
 
   return (
-    <BrowserRouter>
+    <BrowserRouter
+      future={{
+        // Habilita as future flags do React Router v7 com antecedência,
+        // evitando os warnings de deprecação no console e surpresas na próxima
+        // atualização (v7_startTransition e v7_relativeSplatPath).
+        v7_startTransition: true,
+        v7_relativeSplatPath: true,
+      }}
+    >
       <div className="app">
         <Routes>
           {/* Se autenticado, vai para os canais; senão, para o login */}
