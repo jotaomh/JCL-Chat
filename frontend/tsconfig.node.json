@@ -21,9 +21,8 @@
     "noUncheckedSideEffectImports": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["./src/*"]
     }
   },
   "include": ["vite.config.ts"]

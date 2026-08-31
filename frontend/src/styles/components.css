@@ -547,6 +547,22 @@
   background: var(--color-bg-tertiary);
 }
 
+/* Área clicável que abre a conversa direta com o amigo */
+.friend-row-main {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
 /* Indicador visual simples de status (online real fica p/ Presence).
    Por ora todas offline (cinza). */
 .friend-status-dot {

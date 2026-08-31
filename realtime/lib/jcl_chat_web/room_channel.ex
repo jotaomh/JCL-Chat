@@ -21,6 +21,26 @@ defmodule JclChatWeb.RoomChannel do
     {:ok, %{message: "Bem-vindo a sala!"}, socket}
   end
 
+  # Sala de DM: o tópico é "room:dm:<menor_id>_<maior_id>", um nome canônico
+  # determinístico (os dois participantes sempre calculam o mesmo tópico).
+  # Só quem é um dos dois usuários do par pode entrar.
+  def join("room:dm:" <> pair_id, _payload, socket) do
+    user_id = socket.assigns[:user_id]
+
+    case String.split(pair_id, "_") do
+      [id_a, id_b] when id_a != "" and id_b != "" ->
+        if user_id in [id_a, id_b] do
+          send(self(), :after_join)
+          {:ok, socket}
+        else
+          {:error, %{reason: "unauthorized"}}
+        end
+
+      _ ->
+        {:error, %{reason: "unauthorized"}}
+    end
+  end
+
   # Qualquer outro tópico "room:*" é aceito
   def join("room:" <> _room_id, _payload, socket) do
     send(self(), :after_join)

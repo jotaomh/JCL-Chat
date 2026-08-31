@@ -10,7 +10,7 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from src.app.routers import auth, users, friends, groups, health
+from src.app.routers import auth, users, friends, groups, health, direct_messages
 
 # Diretório-base do projeto (para facilitar imports)
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -41,6 +41,7 @@ app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(users.router, prefix="/api/users", tags=["users"])
 app.include_router(friends.router, prefix="/api/friends", tags=["friends"])
 app.include_router(groups.router, prefix="/api/groups", tags=["groups"])
+app.include_router(direct_messages.router, prefix="/api/dms", tags=["dms"])
 
 
 # Endpoint raiz: "hello world"

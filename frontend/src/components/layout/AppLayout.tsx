@@ -41,6 +41,12 @@ export function AppLayout({
     setSidebarOpen(false);
   };
 
+  const handleSelectFriend = (friendId: string, username: string) => {
+    onSelect({ type: 'dm', friendId, friendUsername: username });
+    // Fecha o menu lateral em mobile após escolher uma conversa
+    setSidebarOpen(false);
+  };
+
   return (
     <div className="app-layout">
       {/* Barra superior com hambúrguer (mobile) e identidade */}
@@ -79,6 +85,7 @@ export function AppLayout({
             servers={servers}
             selection={selection}
             onSelectChannel={handleSelectChannel}
+            onSelectFriend={handleSelectFriend}
           />
         </div>
         {sidebarOpen && (

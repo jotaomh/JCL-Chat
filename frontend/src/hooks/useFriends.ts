@@ -19,7 +19,7 @@ import {
   sendFriendRequest,
   acceptFriendRequest,
   rejectFriendRequest,
-  removeFriend,
+  removeFriend as removeFriendApi,
 } from '../services/api';
 
 export function useFriends() {
@@ -114,7 +114,7 @@ export function useFriends() {
     async (id: string) => {
       if (!token) return;
       try {
-        await removeFriend(id);
+        await removeFriendApi(id);
         setMessage('Amizade removida.');
         setError(null);
         await refresh();

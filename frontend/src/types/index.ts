@@ -92,6 +92,21 @@ export interface ChatMessage {
   timestamp: string;
 }
 
+// Mensagem direta (DM) — persistida pela API REST em /api/dms
+export interface DirectMessage {
+  id: string;
+  sender_id: string;
+  recipient_id: string;
+  body: string;
+  created_at: string;
+}
+
+// Resposta da API com o histórico de uma conversa direta
+export interface DirectMessagesResponse {
+  messages: DirectMessage[];
+  count: number;
+}
+
 // Canal de texto dentro de um grupo (fase inicial: sempre "lobby")
 export interface ServerChannel {
   id: string;
@@ -105,7 +120,9 @@ export interface ServerItem {
   channels: ServerChannel[];
 }
 
-// Seleção atual no layout: "Amigos"/DMs ou um canal específico de um grupo
+// Seleção atual no layout: "Amigos"/DMs, um canal específico de um grupo,
+// ou uma conversa direta (DM) com um amigo.
 export type AppSelection =
   | { type: 'friends' }
-  | { type: 'channel'; serverId: string; channelId: string };
+  | { type: 'channel'; serverId: string; channelId: string }
+  | { type: 'dm'; friendId: string; friendUsername?: string };

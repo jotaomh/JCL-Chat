@@ -15,9 +15,10 @@ interface ChannelSidebarProps {
   servers: ServerItem[];
   selection: AppSelection;
   onSelectChannel: (serverId: string, channelId: string) => void;
+  onSelectFriend?: (friendId: string, username: string) => void;
 }
 
-function FriendsSidebar() {
+function FriendsSidebar({ onSelectFriend }: { onSelectFriend?: (friendId: string, username: string) => void }) {
   const {
     friends,
     requests,
@@ -116,8 +117,15 @@ function FriendsSidebar() {
           <ul className="sidebar-list">
             {friends.map((friend) => (
               <li key={friend.id} className="friend-row">
-                <span className="friend-status-dot" title="offline" />
-                <span className="friend-name">{friend.username}</span>
+                <button
+                  type="button"
+                  className="friend-row-main"
+                  onClick={() => onSelectFriend?.(friend.id, friend.username)}
+                  title={`Conversar com ${friend.username}`}
+                >
+                  <span className="friend-status-dot" title="offline" />
+                  <span className="friend-name">{friend.username}</span>
+                </button>
                 <button
                   type="button"
                   className="friend-remove"
@@ -140,9 +148,10 @@ export function ChannelSidebar({
   servers,
   selection,
   onSelectChannel,
+  onSelectFriend,
 }: ChannelSidebarProps) {
-  if (selection.type === 'friends') {
-    return <FriendsSidebar />;
+  if (selection.type === 'friends' || selection.type === 'dm') {
+    return <FriendsSidebar onSelectFriend={onSelectFriend} />;
   }
 
   const server = servers.find((s) => s.id === selection.serverId);

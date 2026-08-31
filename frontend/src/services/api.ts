@@ -202,3 +202,20 @@ export async function sendMessage(channelId: string, content: string) {
     body: JSON.stringify({ content }),
   });
 }
+
+// === Mensagens diretas (DMs) ===
+
+// Histórico de uma conversa direta com um amigo (ordenado por created_at)
+export async function getDirectMessages(friendId: string) {
+  return apiRequest<import('../types').DirectMessagesResponse>(
+    `/dms/${friendId}/messages`
+  );
+}
+
+// Persiste uma mensagem direta para um amigo
+export async function sendDirectMessage(friendId: string, body: string) {
+  return apiRequest<import('../types').DirectMessage>(`/dms/${friendId}/messages`, {
+    method: 'POST',
+    body: JSON.stringify({ body }),
+  });
+}
